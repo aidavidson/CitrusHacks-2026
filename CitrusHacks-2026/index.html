@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spotify Tracker</title>
+    <title>Sortify</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -34,18 +34,38 @@
           </p>
 
           <div class="hero-actions">
-            <button class="primary-button">Connect Your Spotify</button>
-            <button class="secondary-button">Check Skipped</button>
+            <button class="primary-button" id="connect-spotify-button">Connect Your Spotify</button>
+            <button class="secondary-button" id="check-skipped-button">Check Skipped</button>
           </div>
+          <div class="client-config">
+            <label class="client-config-label" for="spotify-client-id">
+              Spotify Client ID
+            </label>
+            <div class="client-config-row">
+              <input
+                class="client-config-input"
+                id="spotify-client-id"
+                name="spotify-client-id"
+                type="text"
+                placeholder="Paste your Spotify Client ID"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button class="secondary-button client-config-button" id="save-client-id-button">
+                Save ID
+              </button>
+            </div>
+          </div>
+          <p class="auth-status" id="auth-status">Connect Spotify to load your listening data.</p>
 
           <div class="stat-strip">
             <article>
-              <span class="stat-number">67</span>
-              <span class="stat-label">Songs Played</span>
+              <span class="stat-number" id="songs-played-value"></span>
+              <span class="stat-label" id="songs-played-label"></span>
             </article>
             <article>
-              <span class="stat-number">18</span>
-              <span class="stat-label">Songs Skipped</span>
+              <span class="stat-number" id="songs-skipped-value"></span>
+              <span class="stat-label" id="songs-skipped-label"></span>
             </article>
           </div>
         </div>
@@ -59,7 +79,7 @@
           </div>
           <div class="progress-block">
             <div class="progress-line">
-              <span></span>
+              <span id="now-playing-progress"></span>
             </div>
             <div class="progress-time">
               <span id="now-playing-current-time"></span>
@@ -91,5 +111,114 @@
     </main>
 
     <script src="script.js"></script>
+    <script src="app-config.js"></script>
+    <script type="module">
+      import {
+        fetchCurrentUserProfile,
+        handleSpotifyCallback,
+        isSpotifyConnected,
+        logoutSpotify,
+        startSpotifyLogin,
+      } from "../frontend/js/auth.js";
+
+      const loginButton = document.getElementById("login-button");
+      const authStatus = document.getElementById("auth-status");
+      const clientIdInput = document.getElementById("spotify-client-id");
+      const saveClientIdButton = document.getElementById("save-client-id-button");
+
+      function loadSavedClientId() {
+        const savedClientId = window.localStorage.getItem("spotify_client_id");
+        if (!savedClientId) {
+          return "";
+        }
+
+        window.__APP_CONFIG__ = {
+          ...window.__APP_CONFIG__,
+          spotifyClientId: savedClientId,
+        };
+        return savedClientId;
+      }
+
+      function saveClientId() {
+        const clientId = clientIdInput?.value.trim() ?? "";
+        if (!clientId) {
+          authStatus.textContent = "Enter a Spotify Client ID before saving.";
+          return false;
+        }
+
+        window.localStorage.setItem("spotify_client_id", clientId);
+        window.__APP_CONFIG__ = {
+          ...window.__APP_CONFIG__,
+          spotifyClientId: clientId,
+        };
+        authStatus.textContent = "Spotify Client ID saved locally for this browser.";
+        return true;
+      }
+
+      function updateAuthUi(profile) {
+        if (profile) {
+          loginButton.textContent = "Disconnect Spotify";
+          authStatus.textContent = `Connected as ${profile.display_name ?? "Spotify user"}.`;
+          return;
+        }
+
+        if (isSpotifyConnected()) {
+          loginButton.textContent = "Disconnect Spotify";
+          authStatus.textContent = "Spotify connected. Ready to fetch your listening data.";
+          return;
+        }
+
+        loginButton.textContent = "Connect Your Spotify";
+        authStatus.textContent = "Connect Spotify to load your listening data.";
+      }
+
+      async function initializeSpotifyAuth() {
+        try {
+          await handleSpotifyCallback();
+
+          if (isSpotifyConnected()) {
+            const profile = await fetchCurrentUserProfile();
+            updateAuthUi(profile);
+          } else {
+            updateAuthUi(null);
+          }
+        } catch (error) {
+          console.error(error);
+          authStatus.textContent = error.message;
+          loginButton.textContent = "Connect Your Spotify";
+        }
+      }
+
+      loginButton?.addEventListener("click", async () => {
+        if (isSpotifyConnected()) {
+          logoutSpotify();
+          updateAuthUi(null);
+          return;
+        }
+
+        authStatus.textContent = "Redirecting to Spotify...";
+
+        try {
+          if (!saveClientId()) {
+            return;
+          }
+
+          await startSpotifyLogin();
+        } catch (error) {
+          console.error(error);
+          authStatus.textContent = error.message;
+        }
+      });
+
+      saveClientIdButton?.addEventListener("click", () => {
+        saveClientId();
+      });
+
+      if (clientIdInput) {
+        clientIdInput.value = loadSavedClientId();
+      }
+
+      initializeSpotifyAuth();
+    </script>
   </body>
 </html>
