@@ -1,3 +1,12 @@
+const nowPlaying = {
+  title: "Midnight City",
+  artist: "M83",
+  currentTime: "1:42",
+  duration: "4:03",
+  coverImage:
+    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80"
+};
+
 const recentTracks = [
   { title: "Saturn Nights", artist: "Leisure Club", skips: "1 skip" },
   { title: "Golden Hour", artist: "Kacey Musgraves", skips: "2 skips" },
@@ -14,6 +23,20 @@ const topArtists = [
 
 const recentTracksContainer = document.getElementById("recent-tracks");
 const topArtistsContainer = document.getElementById("top-artists");
+const nowPlayingTitle = document.getElementById("now-playing-title");
+const nowPlayingArtist = document.getElementById("now-playing-artist");
+const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+const nowPlayingDuration = document.getElementById("now-playing-duration");
+const nowPlayingCover = document.getElementById("now-playing-cover");
+
+nowPlayingTitle.textContent = nowPlaying.title;
+nowPlayingArtist.textContent = nowPlaying.artist;
+nowPlayingCurrentTime.textContent = nowPlaying.currentTime;
+nowPlayingDuration.textContent = nowPlaying.duration;
+nowPlayingCover.style.backgroundImage = `
+  linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.52)),
+  url("${nowPlaying.coverImage}")
+`;
 
 recentTracks.forEach((track, index) => {
   const row = document.createElement("div");
