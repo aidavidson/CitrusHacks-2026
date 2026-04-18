@@ -1,15 +1,10 @@
-## Spotify Tracker - Description
-
-
-A website using spotify API to document listens from different songs and tracking which songs are listened to the most
-
 # Did It Count?
 
-A beginner-friendly Citrus Hacks 2026 project skeleton for a web app that estimates whether a Spotify listen likely counted based on playback progress and listening history.
+A beginner-friendly Citrus Hacks 2026 web project that estimates whether a Spotify listen likely qualified under Spotify's 30-second stream rule, then compares that estimate against visible listening history.
 
 ## Project Idea
 
-Sometimes a song feels like it should show up in Spotify history, Airbuds, or Wrapped, but it doesn't. This project tracks playback progress, applies a simple prediction rule, and compares that prediction against Spotify's visible listening history.
+Sometimes a song feels like it should show up in Spotify history, Airbuds, or Wrapped, but it does not. This project tracks playback progress, applies a simple prediction rule, and compares that prediction against Spotify's visible listening history.
 
 ## MVP
 
@@ -17,8 +12,8 @@ Sometimes a song feels like it should show up in Spotify history, Airbuds, or Wr
 - Live "Now Playing" tracker
 - 30-second threshold indicator
 - Session history saved locally
-- Accuracy comparison against Spotify recently played
-- Simple dashboard with skip rate, finish rate, and prediction accuracy
+- Comparison against Spotify recently played
+- Simple dashboard with skip rate, finish rate, and model accuracy
 
 ## Cold, Hard Scope
 
@@ -43,7 +38,28 @@ What we are not building:
 - Storage: `localStorage`
 - Optional later: Firebase or Supabase if you want persistence
 
+## How the App Works
+
+1. The user signs in with Spotify.
+2. The app checks the current track and playback progress.
+3. The app stores listen sessions locally.
+4. The app estimates whether a listen likely qualified under Spotify's 30-second rule.
+5. The app compares those predictions with Spotify recently played results.
+6. The dashboard shows listening patterns and model accuracy.
+
+## Accuracy Definition
+
+For this project:
+
+- prediction = whether our model thinks a listen likely qualified
+- outcome = whether that track later appeared in Spotify recently played
+- accuracy = the percentage of listens where our prediction matched that visible outcome
+
+This is an empirical score for our model, not a direct measurement of Spotify's internal stream-counting system.
+
 ## Repo Structure
+
+Current scaffold:
 
 ```text
 .
@@ -58,31 +74,25 @@ What we are not building:
 │   └── team-roles.md
 └── frontend/
     ├── assets/
-    │   └── .gitkeep
     ├── css/
-    │   └── styles.css
     ├── index.html
     ├── js/
-    │   ├── app.js
-    │   ├── auth.js
-    │   ├── config.js
-    │   └── storage.js
     └── pages/
-        ├── dashboard.html
-        ├── history.html
-        └── player.html
 ```
 
-## How the App Works
+Fastest hackathon fallback:
 
-1. The user signs in with Spotify.
-2. The app checks the current track and playback progress.
-3. The app stores listen sessions locally.
-4. The app marks listens using a simple rule:
-   - under 30 seconds: likely did not count
-   - 30 seconds or more: likely counted
-5. The app compares those predictions with Spotify recently played results.
-6. The dashboard shows the user's patterns and the model's accuracy.
+```text
+frontend/
+├── index.html
+├── css/styles.css
+└── js/
+    ├── app.js
+    ├── auth.js
+    └── storage.js
+```
+
+If time gets tight, collapse the prototype into one main page with sections for Now Playing, History, and Stats.
 
 ## Team Split
 
@@ -97,12 +107,15 @@ Detailed role instructions live in [docs/team-roles.md](/Users/setup/Documents/C
 1. Create a Spotify developer app.
 2. Put your redirect URI and client ID into `.env.example`, then copy those values into your local setup.
 3. Build the login flow first.
-4. Get one page working end-to-end before adding polish.
-5. Take screenshots as you go for the final demo and README.
+4. Poll every 5 seconds, log track changes and max observed progress, and treat "crossed 30s before track changed" as the core experiment if live tracking gets flaky.
+5. Get one page working end-to-end before adding polish.
+6. Take screenshots as you go for the final demo and README.
 
 ## Important Honesty Note
 
-Spotify's public API does not expose an official "this play counted" flag. Your project should present itself as an estimator backed by a real experiment, not as a perfect verifier of Spotify's private systems.
+Spotify's public API does not expose an official "this play counted" flag. This project should present itself as an estimator backed by a real experiment, not as a perfect verifier of Spotify's private systems.
+
+Airbuds should be treated as an optional manual visual comparison in the demo, not as a required integration.
 
 ## Before Submission
 
@@ -110,15 +123,3 @@ Spotify's public API does not expose an official "this play counted" flag. Your 
 - Add screenshots
 - Add a short demo link if you record one
 - Update the README with what actually got finished
-# CitrusHacks-2026
-
-## Spotify Tracker - Description
-
-A website using spotify API to document listens from different songs and tracking which songs are listened to the most
-
-
-
-
-
-
-

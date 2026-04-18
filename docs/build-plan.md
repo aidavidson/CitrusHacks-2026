@@ -4,6 +4,8 @@
 
 If a song reaches at least 30 seconds of playback, it is more likely to appear in Spotify recently played history than a song skipped earlier.
 
+This is a model-validation experiment, not a direct measurement of Spotify's internal stream-counting system.
+
 ## MVP Features
 
 ### Must Have
@@ -26,7 +28,7 @@ If a song reaches at least 30 seconds of playback, it is more likely to appear i
 
 - backend
 - database
-- Airbuds automation
+- Airbuds anything beyond manual demo comparison
 - multiple accounts
 - anything involving mobile apps
 
@@ -44,6 +46,7 @@ If a song reaches at least 30 seconds of playback, it is more likely to appear i
 - build login flow
 - build player page layout
 - fetch current playback data
+- default to polling every 5 seconds instead of chasing high-precision timing
 
 ### Hours 6-10
 
@@ -82,3 +85,9 @@ If recently played comparison becomes flaky:
 - show the tracked session data cleanly
 - explain that comparison is in progress
 - demo the experiment design instead of pretending the endpoint is perfect
+
+If the multi-page UI slows the team down:
+
+- collapse the app into one page
+- use sections for Now Playing, History, and Stats
+- keep the demo flow simple
