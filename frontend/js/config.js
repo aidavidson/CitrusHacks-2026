@@ -2,7 +2,9 @@ const localConfig = window.__APP_CONFIG__ ?? {};
 
 export const spotifyConfig = {
   clientId: localConfig.spotifyClientId ?? "ADD_YOUR_CLIENT_ID",
-  redirectUri: "http://127.0.0.1:5500/frontend/index.html",
+  redirectUri:
+    localConfig.spotifyRedirectUri ??
+    `${window.location.origin}${window.location.pathname}`,
   scopes: [
     "user-read-currently-playing",
     "user-read-playback-state",
