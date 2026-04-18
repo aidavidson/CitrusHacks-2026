@@ -1,10 +1,13 @@
+//needs to be compatible with user's current song and their location in
+//the song
 const nowPlaying = {
   title: "Midnight City",
   artist: "M83",
   currentTime: "1:42",
   duration: "4:03",
   coverImage:
-    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80"
+    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80",
+  percentCompletion: 50
 };
 
 const likedSongs = [
@@ -21,6 +24,7 @@ const skippedSongs = [
   { name: "As It Was", genre: "Harry Styles", score: "16 skips" }
 ];
 
+document.documentElement.style.setProperty('--percent-completion', nowPlaying.percentCompletion + '%');
 const likedSongsContainer = document.getElementById("liked-songs");
 const skippedSongsContainer = document.getElementById("skipped-songs");
 const nowPlayingTitle = document.getElementById("now-playing-title");

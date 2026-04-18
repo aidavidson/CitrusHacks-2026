@@ -282,7 +282,11 @@ h1 {
 
 .progress-line span {
   display: block;
-  width: 43%;
+  /*this width is decided based on location in the song
+  must be modified so when the user is playing song it changes
+  with the user*/
+  width: var(--percent-completion);
+
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ff6b85, #4169e1);
