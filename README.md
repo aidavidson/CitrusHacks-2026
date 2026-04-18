@@ -127,12 +127,4 @@ Airbuds should be treated as an optional manual visual comparison in the demo, n
 - Add screenshots
 - Add a short demo link if you record one
 - Update the README with what actually got finished
-# CitrusHacks-2026
-
-## Spotify Tracker - Description
-
-A website using spotify API to document listens from different songs and tracking which songs are listened to the most
-
-
-
 
