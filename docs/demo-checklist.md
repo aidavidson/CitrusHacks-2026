@@ -20,7 +20,7 @@ We built a web app that tracks playback progress and estimates whether a listen 
 
 ## One-Sentence Pitch
 
-"Did It Count? helps Spotify users understand whether a listen likely counted by tracking playback progress and comparing it with visible listening history."
+"Sortify helps Spotify users understand whether a listen likely counted by tracking playback progress and comparing it with visible listening history."
 
 ## What To Say If Asked About Accuracy
 
