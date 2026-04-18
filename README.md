@@ -1,3 +1,8 @@
+# Spotify Tracker - Description
+
+
+A website using spotify API to document listens from different songs and tracking which songs are listened to the most
+
 # Did It Count?
 
 A beginner-friendly Citrus Hacks 2026 project skeleton for a web app that estimates whether a Spotify listen likely counted based on playback progress and listening history.
@@ -110,6 +115,9 @@ Spotify's public API does not expose an official "this play counted" flag. Your 
 ## Spotify Tracker - Description
 
 A website using spotify API to document listens from different songs and tracking which songs are listened to the most
+
+
+
 
 
 
