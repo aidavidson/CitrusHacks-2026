@@ -22,12 +22,92 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "Space Grotesk", sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(65, 105, 225, 0.42), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(194, 30, 86, 0.38), transparent 30%),
-    linear-gradient(145deg, #1b2f8b 0%, #50204f 52%, #8b1e3f 100%);
+  background: #0a0d37;
   color: var(--text);
   overflow-x: hidden;
+}
+
+.gradient-container {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(65, 105, 225, 0.2), transparent 24%),
+    radial-gradient(circle at 80% 30%, rgba(194, 30, 86, 0.18), transparent 22%),
+    linear-gradient(140deg, #08114d 0%, #261560 40%, #611745 100%);
+}
+
+.gradient-orb,
+.gradient-wave,
+.gradient-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gradient-orb {
+  border-radius: 999px;
+  filter: blur(72px);
+  opacity: 0.82;
+  mix-blend-mode: screen;
+}
+
+.gradient-orb-blue {
+  top: -10%;
+  left: -6%;
+  width: 44vw;
+  height: 44vw;
+  background: radial-gradient(circle, rgba(76, 132, 255, 0.95) 0%, rgba(76, 132, 255, 0) 68%);
+  animation: orbFloatBlue 15s ease-in-out infinite alternate;
+}
+
+.gradient-orb-red {
+  top: 18%;
+  right: -10%;
+  width: 42vw;
+  height: 42vw;
+  background: radial-gradient(circle, rgba(255, 82, 121, 0.9) 0%, rgba(255, 82, 121, 0) 66%);
+  animation: orbFloatRed 18s ease-in-out infinite alternate;
+}
+
+.gradient-orb-indigo {
+  bottom: -18%;
+  left: 28%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(circle, rgba(0, 20, 168, 0.82) 0%, rgba(0, 20, 168, 0) 64%);
+  animation: orbFloatIndigo 20s ease-in-out infinite alternate;
+}
+
+.gradient-wave {
+  inset: -20%;
+  opacity: 0.55;
+  filter: blur(34px);
+  mix-blend-mode: screen;
+}
+
+.gradient-wave-one {
+  background:
+    radial-gradient(ellipse at 30% 35%, rgba(255, 110, 140, 0.34) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 55%, rgba(65, 105, 225, 0.3) 0%, transparent 42%);
+  animation: waveDriftOne 22s ease-in-out infinite alternate;
+}
+
+.gradient-wave-two {
+  background:
+    radial-gradient(ellipse at 55% 28%, rgba(123, 144, 255, 0.26) 0%, transparent 38%),
+    radial-gradient(ellipse at 42% 72%, rgba(194, 30, 86, 0.28) 0%, transparent 40%);
+  animation: waveDriftTwo 26s ease-in-out infinite alternate;
+}
+
+.gradient-mesh {
+  inset: -10%;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.05), transparent 28%),
+    linear-gradient(295deg, rgba(255, 255, 255, 0.035), transparent 30%);
+  opacity: 0.75;
+  animation: meshShift 18s linear infinite;
 }
 
 button {
@@ -59,6 +139,8 @@ button {
 }
 
 .page-shell {
+  position: relative;
+  z-index: 1;
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 2rem 0 3rem;
@@ -172,10 +254,9 @@ h1 {
 .now-playing-cover {
   aspect-ratio: 1;
   border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.52)),
-    url("https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80")
-      center / cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .now-playing-meta h2 {
@@ -366,6 +447,70 @@ h1 {
   }
 }
 
+@keyframes orbFloatBlue {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(12%, 10%, 0) scale(1.16) rotate(18deg);
+  }
+}
+
+@keyframes orbFloatRed {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(-14%, 8%, 0) scale(1.12) rotate(-16deg);
+  }
+}
+
+@keyframes orbFloatIndigo {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(-8%, -14%, 0) scale(1.18) rotate(14deg);
+  }
+}
+
+@keyframes waveDriftOne {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(12deg) scale(1.08);
+  }
+}
+
+@keyframes waveDriftTwo {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(-10deg) scale(1.12);
+  }
+}
+
+@keyframes meshShift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.04);
+  }
+
+  100% {
+    transform: translate3d(-3%, 3%, 0) scale(1);
+  }
+}
+
 @media (max-width: 900px) {
   .hero-card {
     grid-template-columns: 1fr;
@@ -396,5 +541,11 @@ h1 {
   .stat-strip {
     grid-template-columns: 1fr;
   }
-
+  
+  .gradient-orb-blue,
+  .gradient-orb-red,
+  .gradient-orb-indigo {
+    width: 70vw;
+    height: 70vw;
+  }
 }
