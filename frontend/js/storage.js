@@ -1,4 +1,4 @@
-const SESSION_KEY = "did-it-count-sessions";
+const SESSION_KEY = "sortify-sessions";
 
 export function getSavedSessions() {
   const raw = window.localStorage.getItem(SESSION_KEY);

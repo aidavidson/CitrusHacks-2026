@@ -1,4 +1,4 @@
-# 🎧 Did It Count? — Project Codex
+# 🎧 Sortify — Project Codex
 
 > A Spotify listening tracker that estimates whether a song play actually counted, validated empirically against Spotify & Airbuds history.
 
@@ -51,7 +51,7 @@ user-read-recently-played
 
 ---
 
-## 📐 Our "Did It Count?" Rule
+## 📐 Our "Sortify" Rule
 
 Spotify says a song stream is counted after at least **30 seconds** of playback.
 
@@ -123,7 +123,7 @@ If time gets tight, collapse these into one page with sections instead of keepin
 
 ### Person 3 — Product, Demo & Docs
 - Own the README and presentation
-- Write the "Did It Count?" prediction logic
+- Write the Sortify prediction logic
 - Run the empirical test during the hackathon (listen to songs, check results)
 - Build the stats/accuracy dashboard
 - Prepare the demo script
