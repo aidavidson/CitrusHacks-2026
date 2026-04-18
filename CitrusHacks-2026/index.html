@@ -34,8 +34,8 @@
           </p>
 
           <div class="hero-actions">
-            <button class="primary-button" id="login-button">Connect Your Spotify</button>
-            <button class="secondary-button">Check Skipped</button>
+            <button class="primary-button" id="connect-spotify-button">Connect Your Spotify</button>
+            <button class="secondary-button" id="check-skipped-button">Check Skipped</button>
           </div>
           <div class="client-config">
             <label class="client-config-label" for="spotify-client-id">
@@ -60,12 +60,12 @@
 
           <div class="stat-strip">
             <article>
-              <span class="stat-number">67</span>
-              <span class="stat-label">Songs Played</span>
+              <span class="stat-number" id="songs-played-value"></span>
+              <span class="stat-label" id="songs-played-label"></span>
             </article>
             <article>
-              <span class="stat-number">18</span>
-              <span class="stat-label">Songs Skipped</span>
+              <span class="stat-number" id="songs-skipped-value"></span>
+              <span class="stat-label" id="songs-skipped-label"></span>
             </article>
           </div>
         </div>
@@ -79,7 +79,7 @@
           </div>
           <div class="progress-block">
             <div class="progress-line">
-              <span></span>
+              <span id="now-playing-progress"></span>
             </div>
             <div class="progress-time">
               <span id="now-playing-current-time"></span>
