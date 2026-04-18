@@ -1,1 +1,24 @@
 .DS_Store
+
+# Local environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/config.local.js
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+
+# Editor and OS temp files
+*.swp
+*.swo
+*~

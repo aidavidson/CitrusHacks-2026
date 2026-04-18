@@ -1,0 +1,3 @@
+window.__APP_CONFIG__ = {
+  spotifyClientId: "your_spotify_client_id_here",
+};
