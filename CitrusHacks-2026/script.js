@@ -1,32 +1,44 @@
-const recentTracks = [
-  { title: "Saturn Nights", artist: "Leisure Club", playedAt: "2 min ago" },
-  { title: "Golden Hour", artist: "Kacey Musgraves", playedAt: "19 min ago" },
-  { title: "Pink + White", artist: "Frank Ocean", playedAt: "42 min ago" },
-  { title: "Electric Feel", artist: "MGMT", playedAt: "1 hr ago" }
+const nowPlaying = {
+  title: "Midnight City",
+  artist: "M83",
+  currentTime: "1:42",
+  duration: "4:03",
+  coverImage:
+    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80"
+};
+
+const likedSongs = [
+  { title: "Saturn Nights", artist: "Leisure Club", skips: "1 skip" },
+  { title: "Golden Hour", artist: "Kacey Musgraves", skips: "2 skips" },
+  { title: "Pink + White", artist: "Frank Ocean", skips: "3 skips" },
+  { title: "Electric Feel", artist: "MGMT", skips: "4 skips" }
 ];
 
-const topArtists = [
-  { name: "The Marías", genre: "Indie pop", score: "92 pts" },
-  { name: "SZA", genre: "Alt R&B", score: "88 pts" },
-  { name: "Tame Impala", genre: "Psychedelic pop", score: "81 pts" },
-  { name: "Steve Lacy", genre: "Neo soul", score: "76 pts" }
+const skippedSongs = [
+  { name: "Blinding Lights", genre: "The Weeknd", score: "28 skips" },
+  { name: "Kill Bill", genre: "SZA", score: "22 skips" },
+  { name: "Bad Habit", genre: "Steve Lacy", score: "19 skips" },
+  { name: "As It Was", genre: "Harry Styles", score: "16 skips" }
 ];
 
-const activity = [
-  { day: "Mon", value: 42 },
-  { day: "Tue", value: 68 },
-  { day: "Wed", value: 54 },
-  { day: "Thu", value: 86 },
-  { day: "Fri", value: 74 },
-  { day: "Sat", value: 96 },
-  { day: "Sun", value: 58 }
-];
+const likedSongsContainer = document.getElementById("liked-songs");
+const skippedSongsContainer = document.getElementById("skipped-songs");
+const nowPlayingTitle = document.getElementById("now-playing-title");
+const nowPlayingArtist = document.getElementById("now-playing-artist");
+const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+const nowPlayingDuration = document.getElementById("now-playing-duration");
+const nowPlayingCover = document.getElementById("now-playing-cover");
 
-const recentTracksContainer = document.getElementById("recent-tracks");
-const topArtistsContainer = document.getElementById("top-artists");
-const chartContainer = document.getElementById("activity-chart");
+nowPlayingTitle.textContent = nowPlaying.title;
+nowPlayingArtist.textContent = nowPlaying.artist;
+nowPlayingCurrentTime.textContent = nowPlaying.currentTime;
+nowPlayingDuration.textContent = nowPlaying.duration;
+nowPlayingCover.style.backgroundImage = `
+  linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.52)),
+  url("${nowPlaying.coverImage}")
+`;
 
-recentTracks.forEach((track, index) => {
+likedSongs.forEach((track, index) => {
   const row = document.createElement("div");
   row.className = "track-row";
   row.innerHTML = `
@@ -35,12 +47,12 @@ recentTracks.forEach((track, index) => {
       <div class="track-title">${track.title}</div>
       <div class="track-subtitle">${track.artist}</div>
     </div>
-    <div class="track-time">${track.playedAt}</div>
+    <div class="track-time">${track.skips}</div>
   `;
-  recentTracksContainer.appendChild(row);
+  likedSongsContainer.appendChild(row);
 });
 
-topArtists.forEach((artist, index) => {
+skippedSongs.forEach((artist, index) => {
   const row = document.createElement("div");
   row.className = "artist-row";
   row.innerHTML = `
@@ -51,18 +63,5 @@ topArtists.forEach((artist, index) => {
     </div>
     <div class="artist-score">${artist.score}</div>
   `;
-  topArtistsContainer.appendChild(row);
-});
-
-activity.forEach((entry, index) => {
-  const wrap = document.createElement("div");
-  wrap.className = "chart-bar-wrap";
-  wrap.innerHTML = `
-    <div
-      class="chart-bar"
-      style="height: ${entry.value}%; animation-delay: ${index * 90}ms;"
-    ></div>
-    <div class="chart-label">${entry.day}</div>
-  `;
-  chartContainer.appendChild(wrap);
+  skippedSongsContainer.appendChild(row);
 });

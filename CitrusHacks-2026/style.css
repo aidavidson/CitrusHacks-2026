@@ -1,13 +1,17 @@
 :root {
   --bg: #071411;
-  --panel: rgba(16, 33, 28, 0.78);
-  --panel-strong: rgba(25, 48, 41, 0.96);
-  --line: rgba(182, 255, 214, 0.16);
-  --text: #f1f7f4;
-  --muted: #9db5ac;
-  --green: #1ed760;
-  --green-soft: #79f0a5;
+  --panel: rgba(34, 41, 96, 0.76);
+  --panel-strong: rgba(75, 26, 74, 0.94);
+  --line: rgba(112, 137, 255, 0.22);
+  --text: #f7f3f4;
+  --muted: #e2bcc8;
+  --green: #4169e1;
+  --green-soft: #ff5a76;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  --royal-blue: #4169e1;
+  --rose-red: #c21e56;
+  --zaffre-shadow: #0014a8;
+  --button-red: #ff4b5c;
 }
 
 * {
@@ -18,11 +22,92 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: "Space Grotesk", sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(30, 215, 96, 0.18), transparent 26%),
-    linear-gradient(145deg, #06110e 0%, #0a1c18 45%, #05110e 100%);
+  background: #0a0d37;
   color: var(--text);
   overflow-x: hidden;
+}
+
+.gradient-container {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(65, 105, 225, 0.2), transparent 24%),
+    radial-gradient(circle at 80% 30%, rgba(194, 30, 86, 0.18), transparent 22%),
+    linear-gradient(140deg, #08114d 0%, #261560 40%, #611745 100%);
+}
+
+.gradient-orb,
+.gradient-wave,
+.gradient-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gradient-orb {
+  border-radius: 999px;
+  filter: blur(72px);
+  opacity: 0.82;
+  mix-blend-mode: screen;
+}
+
+.gradient-orb-blue {
+  top: -10%;
+  left: -6%;
+  width: 44vw;
+  height: 44vw;
+  background: radial-gradient(circle, rgba(76, 132, 255, 0.95) 0%, rgba(76, 132, 255, 0) 68%);
+  animation: orbFloatBlue 15s ease-in-out infinite alternate;
+}
+
+.gradient-orb-red {
+  top: 18%;
+  right: -10%;
+  width: 42vw;
+  height: 42vw;
+  background: radial-gradient(circle, rgba(255, 82, 121, 0.9) 0%, rgba(255, 82, 121, 0) 66%);
+  animation: orbFloatRed 18s ease-in-out infinite alternate;
+}
+
+.gradient-orb-indigo {
+  bottom: -18%;
+  left: 28%;
+  width: 38vw;
+  height: 38vw;
+  background: radial-gradient(circle, rgba(0, 20, 168, 0.82) 0%, rgba(0, 20, 168, 0) 64%);
+  animation: orbFloatIndigo 20s ease-in-out infinite alternate;
+}
+
+.gradient-wave {
+  inset: -20%;
+  opacity: 0.55;
+  filter: blur(34px);
+  mix-blend-mode: screen;
+}
+
+.gradient-wave-one {
+  background:
+    radial-gradient(ellipse at 30% 35%, rgba(255, 110, 140, 0.34) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 55%, rgba(65, 105, 225, 0.3) 0%, transparent 42%);
+  animation: waveDriftOne 22s ease-in-out infinite alternate;
+}
+
+.gradient-wave-two {
+  background:
+    radial-gradient(ellipse at 55% 28%, rgba(123, 144, 255, 0.26) 0%, transparent 38%),
+    radial-gradient(ellipse at 42% 72%, rgba(194, 30, 86, 0.28) 0%, transparent 40%);
+  animation: waveDriftTwo 26s ease-in-out infinite alternate;
+}
+
+.gradient-mesh {
+  inset: -10%;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.05), transparent 28%),
+    linear-gradient(295deg, rgba(255, 255, 255, 0.035), transparent 30%);
+  opacity: 0.75;
+  animation: meshShift 18s linear infinite;
 }
 
 button {
@@ -44,16 +129,18 @@ button {
 .background-glow-left {
   top: -8rem;
   left: -8rem;
-  background: #23d364;
+  background: var(--royal-blue);
 }
 
 .background-glow-right {
   right: -10rem;
   bottom: -10rem;
-  background: #148f47;
+  background: var(--rose-red);
 }
 
 .page-shell {
+  position: relative;
+  z-index: 1;
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 2rem 0 3rem;
@@ -98,7 +185,7 @@ h1 {
 .hero-text {
   max-width: 52ch;
   line-height: 1.6;
-  color: #cee0d8;
+  color: #f0d8de;
 }
 
 .hero-actions {
@@ -113,18 +200,14 @@ h1 {
   padding: 0.9rem 1.2rem;
   border-radius: 999px;
   transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  background: linear-gradient(180deg, #0b1ea7 0%, var(--zaffre-shadow) 100%);
+  color: var(--button-red);
+  border: 1px solid rgba(255, 75, 92, 0.24);
+  box-shadow: 0 14px 30px rgba(0, 20, 168, 0.34);
 }
 
 .primary-button {
-  background: var(--green);
-  color: #06210f;
   font-weight: 700;
-}
-
-.secondary-button {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--line);
 }
 
 .primary-button:hover,
@@ -134,7 +217,7 @@ h1 {
 
 .stat-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin-top: 1.75rem;
 }
@@ -142,8 +225,9 @@ h1 {
 .stat-strip article {
   padding: 1rem;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, #0b1ea7 0%, var(--zaffre-shadow) 100%);
+  border: 1px solid rgba(255, 75, 92, 0.24);
+  box-shadow: 0 18px 32px rgba(0, 20, 168, 0.3);
 }
 
 .stat-number {
@@ -151,6 +235,11 @@ h1 {
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 0.3rem;
+  color: var(--button-red);
+}
+
+.stat-strip .stat-label {
+  color: var(--button-red);
 }
 
 .now-playing-card {
@@ -158,17 +247,16 @@ h1 {
   gap: 1rem;
   padding: 1.2rem;
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(33, 63, 54, 0.95), rgba(17, 35, 29, 0.95));
-  border: 1px solid rgba(182, 255, 214, 0.12);
+  background: linear-gradient(180deg, rgba(37, 53, 126, 0.95), rgba(82, 25, 69, 0.95));
+  border: 1px solid rgba(255, 90, 118, 0.18);
 }
 
 .now-playing-cover {
   aspect-ratio: 1;
   border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(30, 215, 96, 0.15), rgba(30, 215, 96, 0.55)),
-    url("https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80")
-      center / cover;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .now-playing-meta h2 {
@@ -178,7 +266,7 @@ h1 {
 
 .now-playing-meta p {
   margin: 0;
-  color: #d4e6dd;
+  color: #f0d8de;
 }
 
 .progress-block {
@@ -197,7 +285,7 @@ h1 {
   width: 43%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--green), var(--green-soft));
+  background: linear-gradient(90deg, #ff6b85, #4169e1);
 }
 
 .progress-time {
@@ -258,8 +346,8 @@ h1 {
   gap: 0.8rem;
   padding: 0.85rem 0.9rem;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(112, 137, 255, 0.15);
 }
 
 .track-row {
@@ -273,7 +361,7 @@ h1 {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: rgba(30, 215, 96, 0.12);
+  background: rgba(65, 105, 225, 0.22);
   color: var(--green-soft);
   font-weight: 700;
 }
@@ -322,7 +410,7 @@ h1 {
   max-width: 72px;
   min-height: 60px;
   border-radius: 20px 20px 10px 10px;
-  background: linear-gradient(180deg, #7ef1a6 0%, #1ed760 100%);
+  background: linear-gradient(180deg, #ff6b85 0%, #4169e1 100%);
   box-shadow: inset 0 -10px 24px rgba(0, 0, 0, 0.16);
   animation: rise 850ms ease both;
   transform-origin: bottom;
@@ -337,6 +425,16 @@ h1 {
   background: var(--panel-strong);
 }
 
+.clean-panel {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+}
+
+.clean-button {
+  min-width: 180px;
+}
+
 @keyframes rise {
   from {
     transform: scaleY(0.2);
@@ -346,6 +444,70 @@ h1 {
   to {
     transform: scaleY(1);
     opacity: 1;
+  }
+}
+
+@keyframes orbFloatBlue {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(12%, 10%, 0) scale(1.16) rotate(18deg);
+  }
+}
+
+@keyframes orbFloatRed {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(-14%, 8%, 0) scale(1.12) rotate(-16deg);
+  }
+}
+
+@keyframes orbFloatIndigo {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+
+  100% {
+    transform: translate3d(-8%, -14%, 0) scale(1.18) rotate(14deg);
+  }
+}
+
+@keyframes waveDriftOne {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(12deg) scale(1.08);
+  }
+}
+
+@keyframes waveDriftTwo {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+
+  100% {
+    transform: rotate(-10deg) scale(1.12);
+  }
+}
+
+@keyframes meshShift {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.04);
+  }
+
+  100% {
+    transform: translate3d(-3%, 3%, 0) scale(1);
   }
 }
 
@@ -379,8 +541,11 @@ h1 {
   .stat-strip {
     grid-template-columns: 1fr;
   }
-
-  .chart {
-    gap: 0.5rem;
+  
+  .gradient-orb-blue,
+  .gradient-orb-red,
+  .gradient-orb-indigo {
+    width: 70vw;
+    height: 70vw;
   }
 }
