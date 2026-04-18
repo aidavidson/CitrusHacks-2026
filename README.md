@@ -1,8 +1,8 @@
-# Spotify Tracker - Description
+# Sortify - Description
 
 A website using spotify API to document listens from different songs and tracking which songs are listened to the most
 
-# Did It Count?
+# Sortify
 
 A beginner-friendly Citrus Hacks 2026 web project that estimates whether a Spotify listen likely qualified under Spotify's 30-second stream rule, then compares that estimate against visible listening history.
 
@@ -127,4 +127,3 @@ Airbuds should be treated as an optional manual visual comparison in the demo, n
 - Add screenshots
 - Add a short demo link if you record one
 - Update the README with what actually got finished
-
