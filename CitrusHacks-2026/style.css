@@ -299,6 +299,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.85rem;
+  justify-content: center;
 }
 
 .primary-button,

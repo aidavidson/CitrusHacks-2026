@@ -39,10 +39,9 @@
          </p>
 
 
-         <div class="hero-actions">
-           <button class="primary-button" id="login-button">Connect Your Spotify</button>
-           <button class="secondary-button" id="check-skipped-button">Check Skipped</button>
-         </div>
+	         <div class="hero-actions">
+	           <button class="primary-button" id="login-button">Connect Your Spotify</button>
+	         </div>
          <div class="client-config">
            <label class="client-config-label" for="spotify-client-id">
              Spotify Client ID
@@ -75,13 +74,12 @@
              class="logo dashboard-hero-image"
              src="book-logo2.png"
              alt="Sortify bookshelf illustration"
-           />
-           <div class="dashboard-button-row">
-             <button class="primary-button" id="disconnect-button">Disconnect Spotify</button>
-             <button class="secondary-button" id="dashboard-check-skipped-button">Check Skipped</button>
-           </div>
-         </div>
-       </header>
+	           />
+	           <div class="dashboard-button-row">
+	             <button class="primary-button" id="disconnect-button">Disconnect Spotify</button>
+	           </div>
+	         </div>
+	       </header>
 
        <section class="stat-strip dashboard-stat-strip">
          <article>
@@ -156,7 +154,7 @@
 	     const rateLimitWarning = document.getElementById("rate-limit-warning");
 	     const sortifyDebug = document.getElementById("sortify-debug");
 	     const SKIP_THRESHOLD = 0.55;
-	     const ACTIVE_POLL_INTERVAL_MS = 5000;
+	     const ACTIVE_POLL_INTERVAL_MS = 500000;
 	     const IDLE_POLL_INTERVAL_MS = 60000;
 	     let nowPlayingPollId = null;
 	     let spotifyCooldownTimeoutId = null;

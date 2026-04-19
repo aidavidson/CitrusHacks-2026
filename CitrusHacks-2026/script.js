@@ -13,8 +13,6 @@ const formatSkips = (value) => `${value} ${value === 1 ? "skip" : "skips"}`;
 const landingPage = document.getElementById("landing-page");
 const dashboardPage = document.getElementById("dashboard-page");
 const skippedSongsContainer = document.getElementById("skipped-songs");
-const checkSkippedButton = document.getElementById("check-skipped-button");
-const dashboardCheckSkippedButton = document.getElementById("dashboard-check-skipped-button");
 const welcomeUserName = document.getElementById("welcome-user-name");
 const songsPlayedValue = document.getElementById("songs-played-value");
 const songsPlayedLabel = document.getElementById("songs-played-label");
@@ -161,9 +159,6 @@ const renderSkippedSongs = () => {
     renderConnectFirstState();
   }
 };
-
-checkSkippedButton?.addEventListener("click", renderSkippedSongs);
-dashboardCheckSkippedButton?.addEventListener("click", renderSkippedSongs);
 
 window.addEventListener("spotify-auth-changed", (event) => {
   const { connected, profile } = event.detail;
