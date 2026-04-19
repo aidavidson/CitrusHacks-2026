@@ -17,10 +17,6 @@
 	     id="rate-limit-warning"
 	     style="display: none; position: fixed; top: 16px; right: 16px; z-index: 9999; max-width: 320px; padding: 12px 14px; border: 1px solid rgba(255, 133, 133, 0.55); border-radius: 12px; background: rgba(61, 10, 18, 0.94); color: #ffe4e6; font-size: 12px; line-height: 1.45; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);"
 	   ></div>
-	   <pre
-	     id="sortify-debug"
-	     style="position: fixed; bottom: 16px; right: 16px; z-index: 9998; max-width: 360px; max-height: 220px; overflow: auto; margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(10, 10, 18, 0.82); color: #f8fafc; font-size: 11px;"
-	   ></pre>
 	   <div class="gradient-container">
 	     <div class="gradient-orb gradient-orb-blue"></div>
      <div class="gradient-orb gradient-orb-red"></div>
@@ -159,9 +155,8 @@
 	     const thresholdNotice = document.getElementById("threshold-notice");
 	     const rateLimitWarning = document.getElementById("rate-limit-warning");
 	     const sortifyDebug = document.getElementById("sortify-debug");
-	     const SKIP_THRESHOLD = 0.20;
+	     const SKIP_THRESHOLD = 0.55;
 	     const ACTIVE_POLL_INTERVAL_MS = 5000;
-	     const POST_THRESHOLD_POLL_INTERVAL_MS = 20000;
 	     const IDLE_POLL_INTERVAL_MS = 60000;
 	     let nowPlayingPollId = null;
 	     let spotifyCooldownTimeoutId = null;
@@ -602,9 +597,6 @@
 	         progress_ms: trackData?.progress_ms ?? 0,
 	         is_playing: trackData?.is_playing ?? false,
 	       };
-	       const hasReachedThreshold =
-	         currentTrack.duration_ms > 0 &&
-	         currentTrack.progress_ms >= currentTrack.duration_ms * SKIP_THRESHOLD;
 	       maybeRecordThresholdEvent(currentTrack);
 	       currentPlaybackDebug = {
 	         status: response.status,
@@ -616,11 +608,9 @@
 		           polledAt: new Date().toISOString(),
 		         };
 		         updateSortifyDebugPanel();
-		         if (hasReachedThreshold && currentPollIntervalMs !== POST_THRESHOLD_POLL_INTERVAL_MS) {
-		           restartNowPlayingPolling(POST_THRESHOLD_POLL_INTERVAL_MS);
-		         } else if (!hasReachedThreshold && currentPollIntervalMs !== ACTIVE_POLL_INTERVAL_MS) {
-		           restartNowPlayingPolling(ACTIVE_POLL_INTERVAL_MS);
-		         }
+			         if (currentPollIntervalMs !== ACTIVE_POLL_INTERVAL_MS) {
+			           restartNowPlayingPolling(ACTIVE_POLL_INTERVAL_MS);
+			         }
 	         await maybeClassifyPreviousTrack(currentTrack);
 	         console.log("Spotify currently playing JSON:", trackData);
 	         renderNowPlaying(trackData);
