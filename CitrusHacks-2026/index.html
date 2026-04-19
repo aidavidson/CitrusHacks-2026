@@ -11,10 +11,14 @@
      rel="stylesheet"
    />
    <link rel="stylesheet" href="style.css" />
- </head>
- <body>
-   <div class="gradient-container">
-     <div class="gradient-orb gradient-orb-blue"></div>
+	 </head>
+	 <body>
+	   <div
+	     id="rate-limit-warning"
+	     style="display: none; position: fixed; top: 16px; right: 16px; z-index: 9999; max-width: 320px; padding: 12px 14px; border: 1px solid rgba(255, 133, 133, 0.55); border-radius: 12px; background: rgba(61, 10, 18, 0.94); color: #ffe4e6; font-size: 12px; line-height: 1.45; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);"
+	   ></div>
+	   <div class="gradient-container">
+	     <div class="gradient-orb gradient-orb-blue"></div>
      <div class="gradient-orb gradient-orb-red"></div>
      <div class="gradient-orb gradient-orb-indigo"></div>
      <div class="gradient-wave gradient-wave-one"></div>
@@ -152,15 +156,17 @@
      const disconnectButton = document.getElementById("disconnect-button");
      const authStatus = document.getElementById("auth-status");
      const clientIdInput = document.getElementById("spotify-client-id");
-     const saveClientIdButton = document.getElementById("save-client-id-button");
-     const nowPlayingTitle = document.getElementById("now-playing-title");
-     const nowPlayingArtist = document.getElementById("now-playing-artist");
-     const nowPlayingCover = document.getElementById("now-playing-cover");
-     const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
-     const nowPlayingDuration = document.getElementById("now-playing-duration");
-     const nowPlayingProgress = document.getElementById("now-playing-progress");
-     let nowPlayingPollId = null;
-     let spotifyCooldownTimeoutId = null;
+	     const saveClientIdButton = document.getElementById("save-client-id-button");
+	     const nowPlayingTitle = document.getElementById("now-playing-title");
+	     const nowPlayingArtist = document.getElementById("now-playing-artist");
+	     const nowPlayingCover = document.getElementById("now-playing-cover");
+	     const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+	     const nowPlayingDuration = document.getElementById("now-playing-duration");
+	     const nowPlayingProgress = document.getElementById("now-playing-progress");
+	     const rateLimitWarning = document.getElementById("rate-limit-warning");
+	     let nowPlayingPollId = null;
+	     let spotifyCooldownTimeoutId = null;
+	     let isNowPlayingRequestInFlight = false;
 
 
      function setAuthStatus(message) {
@@ -170,11 +176,25 @@
      }
 
 
-     function setLoginButtonLabel(message) {
-       if (loginButton) {
-         loginButton.textContent = message;
-       }
-     }
+	     function setLoginButtonLabel(message) {
+	       if (loginButton) {
+	         loginButton.textContent = message;
+	       }
+	     }
+
+	     function hideRateLimitWarning() {
+	       if (rateLimitWarning) {
+	         rateLimitWarning.style.display = "none";
+	         rateLimitWarning.textContent = "";
+	       }
+	     }
+
+	     function showRateLimitWarning(message) {
+	       if (rateLimitWarning) {
+	         rateLimitWarning.textContent = message;
+	         rateLimitWarning.style.display = "block";
+	       }
+	     }
 
      function getRetryAfterSeconds(response) {
        const retryAfterHeader = Number(response.headers.get("Retry-After") ?? "30");
@@ -188,20 +208,24 @@
        }
      }
 
-     function scheduleSpotifyCooldown(retryAfterSeconds, onResume) {
-       stopNowPlayingPolling();
-       clearSpotifyCooldown();
-       setAuthStatus(
-         `Spotify rate limit hit. Cooling down for ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.`
-       );
+	     function scheduleSpotifyCooldown(retryAfterSeconds, onResume) {
+	       stopNowPlayingPolling();
+	       clearSpotifyCooldown();
+	       setAuthStatus(
+	         `Spotify rate limit hit. Cooling down for ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.`
+	       );
+	       showRateLimitWarning(
+	         `Spotify rate limit hit. Stop testing in other tabs right now.${retryAfterSeconds ? ` Cooling down for about ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.` : ""}`
+	       );
 
-       spotifyCooldownTimeoutId = window.setTimeout(() => {
-         spotifyCooldownTimeoutId = null;
-         if (typeof onResume === "function") {
-           onResume();
-         }
-       }, retryAfterSeconds * 1000);
-     }
+	       spotifyCooldownTimeoutId = window.setTimeout(() => {
+	         spotifyCooldownTimeoutId = null;
+	         hideRateLimitWarning();
+	         if (typeof onResume === "function") {
+	           onResume();
+	         }
+	       }, retryAfterSeconds * 1000);
+	     }
 
      function formatMs(ms) {
        if (!Number.isFinite(ms) || ms < 0) {
@@ -293,31 +317,41 @@
          return null;
        }
 
+       if (isNowPlayingRequestInFlight || document.hidden) {
+         return null;
+       }
+
+       isNowPlayingRequestInFlight = true;
+
+       try {
        const response = await spotifyFetch("/me/player/currently-playing");
 
-       if (response.status === 429) {
-         const retryAfterSeconds = getRetryAfterSeconds(response);
-         scheduleSpotifyCooldown(retryAfterSeconds, () => {
-           if (isSpotifyConnected()) {
-             startNowPlayingPolling();
-           }
-         });
-         return null;
-       }
+         if (response.status === 429) {
+           const retryAfterSeconds = getRetryAfterSeconds(response);
+           scheduleSpotifyCooldown(retryAfterSeconds, () => {
+             if (isSpotifyConnected()) {
+               startNowPlayingPolling();
+             }
+           });
+           return null;
+         }
 
-       if (response.status === 204) {
-         resetNowPlayingUi();
-         return null;
-       }
+         if (response.status === 204) {
+           resetNowPlayingUi();
+           return null;
+         }
 
-       if (!response.ok) {
-         throw new Error("Could not load current Spotify playback.");
-       }
+         if (!response.ok) {
+           throw new Error("Could not load current Spotify playback.");
+         }
 
-       const trackData = await response.json();
-       console.log("Spotify currently playing JSON:", trackData);
-       renderNowPlaying(trackData);
-       return trackData;
+         const trackData = await response.json();
+         console.log("Spotify currently playing JSON:", trackData);
+         renderNowPlaying(trackData);
+         return trackData;
+       } finally {
+         isNowPlayingRequestInFlight = false;
+       }
      }
 
      function startNowPlayingPolling() {
@@ -335,7 +369,7 @@
            console.error(error);
            setAuthStatus(error.message);
          });
-       }, 5000);
+       }, 10000);
      }
 
      function stopNowPlayingPolling() {
@@ -428,20 +462,19 @@
          await handleSpotifyCallback();
 
          if (isSpotifyConnected()) {
-           try {
-             const profile = await fetchCurrentUserProfile();
-             updateAuthUi(profile);
-             clearSpotifyCooldown();
-             startNowPlayingPolling();
-           } catch (profileError) {
-             if (profileError.retryAfterSeconds) {
-               updateAuthUi(null);
-               resetNowPlayingUi("Spotify API is cooling down. Playback will resume shortly.");
-               scheduleSpotifyCooldown(profileError.retryAfterSeconds, () => {
-                 if (isSpotifyConnected()) {
-                   initializeSpotifyAuth();
-                 }
-               });
+           updateAuthUi(null);
+           clearSpotifyCooldown();
+           startNowPlayingPolling();
+
+	           try {
+	             const profile = await fetchCurrentUserProfile();
+	             updateAuthUi(profile);
+	             hideRateLimitWarning();
+	           } catch (profileError) {
+	             if (profileError.retryAfterSeconds) {
+	               setAuthStatus(
+	                 `Spotify connected. Profile lookup is cooling down for ${profileError.retryAfterSeconds} second${profileError.retryAfterSeconds === 1 ? "" : "s"}.`
+               );
                return;
              }
 
@@ -492,19 +525,43 @@
      });
 
 
-     disconnectButton?.addEventListener("click", () => {
-       stopNowPlayingPolling();
-       clearSpotifyCooldown();
-       logoutSpotify();
-       updateAuthUi(null);
-     });
+	     disconnectButton?.addEventListener("click", () => {
+	       stopNowPlayingPolling();
+	       clearSpotifyCooldown();
+	       hideRateLimitWarning();
+	       logoutSpotify();
+	       updateAuthUi(null);
+	     });
 
 
      if (clientIdInput) {
        clientIdInput.value = loadSavedClientId();
      }
 
-     initializeSpotifyAuth();
-   </script>
+	     document.addEventListener("visibilitychange", () => {
+	       if (!isSpotifyConnected()) {
+	         return;
+       }
+
+       if (document.hidden) {
+         stopNowPlayingPolling();
+         return;
+       }
+
+	       if (!spotifyCooldownTimeoutId) {
+	         startNowPlayingPolling();
+	       }
+	     });
+
+	     window.addEventListener("sortify-rate-limit", (event) => {
+	       const retryAfterSeconds = event.detail?.retryAfterSeconds;
+	       const path = event.detail?.path ?? "Spotify API";
+	       showRateLimitWarning(
+	         `${path} returned 429. Stop testing in other tabs.${retryAfterSeconds ? ` Retry after about ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.` : ""}`
+	       );
+	     });
+
+	     initializeSpotifyAuth();
+	   </script>
  </body>
 </html>

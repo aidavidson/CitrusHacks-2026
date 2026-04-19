@@ -103,6 +103,19 @@ function clearTokens() {
   window.localStorage.removeItem(STORAGE_KEYS.tokens);
 }
 
+function dispatchSpotifyRateLimitEvent(path, response) {
+  const retryAfter = response.headers.get("Retry-After");
+  window.dispatchEvent(
+    new CustomEvent("sortify-rate-limit", {
+      detail: {
+        path,
+        retryAfterSeconds: retryAfter ? Number(retryAfter) : null,
+        status: response.status,
+      },
+    })
+  );
+}
+
 function validateSpotifyConfig() {
   if (!spotifyConfig.clientId || spotifyConfig.clientId === "ADD_YOUR_CLIENT_ID") {
     throw new Error(
@@ -202,6 +215,10 @@ export async function spotifyFetch(path, init = {}) {
   });
   console.log("[Sortify] spotifyFetch", path, response.status, response.headers.get("Retry-After"));
 
+  if (response.status === 429) {
+    dispatchSpotifyRateLimitEvent(path, response);
+  }
+
   if (response.status === 401) {
     const refreshedToken = await refreshAccessToken();
     const retryResponse = await fetch(`${API_URL}${path}`, {
@@ -217,6 +234,11 @@ export async function spotifyFetch(path, init = {}) {
       retryResponse.status,
       retryResponse.headers.get("Retry-After")
     );
+
+    if (retryResponse.status === 429) {
+      dispatchSpotifyRateLimitEvent(path, retryResponse);
+    }
+
     return retryResponse;
   }
 
