@@ -10,6 +10,39 @@ const STORAGE_KEYS = {
   tokens: "spotify_tokens",
 };
 
+function setTransientStorage(key, value) {
+  window.localStorage.setItem(key, value);
+
+  try {
+    window.sessionStorage.setItem(key, value);
+  } catch {
+    // Session storage can fail in stricter browser modes; localStorage remains the fallback.
+  }
+}
+
+function getTransientStorage(key) {
+  const localValue = window.localStorage.getItem(key);
+  if (localValue) {
+    return localValue;
+  }
+
+  try {
+    return window.sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function removeTransientStorage(key) {
+  window.localStorage.removeItem(key);
+
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    // Ignore sessionStorage cleanup failures.
+  }
+}
+
 function toBase64Url(bytes) {
   return btoa(String.fromCharCode(...bytes))
     .replace(/\+/g, "-")
@@ -62,12 +95,25 @@ function getStoredTokens() {
 }
 
 function clearOAuthState() {
-  window.localStorage.removeItem(STORAGE_KEYS.codeVerifier);
-  window.localStorage.removeItem(STORAGE_KEYS.oauthState);
+  removeTransientStorage(STORAGE_KEYS.codeVerifier);
+  removeTransientStorage(STORAGE_KEYS.oauthState);
 }
 
 function clearTokens() {
   window.localStorage.removeItem(STORAGE_KEYS.tokens);
+}
+
+function dispatchSpotifyRateLimitEvent(path, response) {
+  const retryAfter = response.headers.get("Retry-After");
+  window.dispatchEvent(
+    new CustomEvent("sortify-rate-limit", {
+      detail: {
+        path,
+        retryAfterSeconds: retryAfter ? Number(retryAfter) : null,
+        status: response.status,
+      },
+    })
+  );
 }
 
 function validateSpotifyConfig() {
@@ -79,7 +125,7 @@ function validateSpotifyConfig() {
 }
 
 async function exchangeCodeForTokens(code) {
-  const codeVerifier = window.localStorage.getItem(STORAGE_KEYS.codeVerifier);
+  const codeVerifier = getTransientStorage(STORAGE_KEYS.codeVerifier);
   if (!codeVerifier) {
     throw new Error("Missing PKCE code verifier.");
   }
@@ -101,7 +147,8 @@ async function exchangeCodeForTokens(code) {
   });
 
   if (!response.ok) {
-    throw new Error("Spotify token exchange failed.");
+    const errorBody = await response.text();
+    throw new Error(`Spotify token exchange failed (${response.status}): ${errorBody}`);
   }
 
   return saveTokens(await response.json());
@@ -166,16 +213,33 @@ export async function spotifyFetch(path, init = {}) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  console.log("[Sortify] spotifyFetch", path, response.status, response.headers.get("Retry-After"));
+
+  if (response.status === 429) {
+    dispatchSpotifyRateLimitEvent(path, response);
+  }
 
   if (response.status === 401) {
     const refreshedToken = await refreshAccessToken();
-    return fetch(`${API_URL}${path}`, {
+    const retryResponse = await fetch(`${API_URL}${path}`, {
       ...init,
       headers: {
         ...init.headers,
         Authorization: `Bearer ${refreshedToken.accessToken}`,
       },
     });
+    console.log(
+      "[Sortify] spotifyFetch retry",
+      path,
+      retryResponse.status,
+      retryResponse.headers.get("Retry-After")
+    );
+
+    if (retryResponse.status === 429) {
+      dispatchSpotifyRateLimitEvent(path, retryResponse);
+    }
+
+    return retryResponse;
   }
 
   return response;
@@ -183,6 +247,15 @@ export async function spotifyFetch(path, init = {}) {
 
 export async function fetchCurrentUserProfile() {
   const response = await spotifyFetch("/me");
+  if (response.status === 429) {
+    const retryAfterSeconds = Number(response.headers.get("Retry-After") ?? "30");
+    const error = new Error(
+      `Spotify rate limit hit. Retry in ${retryAfterSeconds} second${retryAfterSeconds === 1 ? "" : "s"}.`
+    );
+    error.retryAfterSeconds = retryAfterSeconds;
+    throw error;
+  }
+
   if (!response.ok) {
     throw new Error("Could not load Spotify profile.");
   }
@@ -206,8 +279,8 @@ export async function startSpotifyLogin() {
   const state = createRandomString(16);
   const codeChallenge = await createCodeChallenge(codeVerifier);
 
-  window.localStorage.setItem(STORAGE_KEYS.codeVerifier, codeVerifier);
-  window.localStorage.setItem(STORAGE_KEYS.oauthState, state);
+  setTransientStorage(STORAGE_KEYS.codeVerifier, codeVerifier);
+  setTransientStorage(STORAGE_KEYS.oauthState, state);
 
   const params = new URLSearchParams({
     client_id: spotifyConfig.clientId,
@@ -237,7 +310,7 @@ export async function handleSpotifyCallback() {
     return null;
   }
 
-  const savedState = window.localStorage.getItem(STORAGE_KEYS.oauthState);
+  const savedState = getTransientStorage(STORAGE_KEYS.oauthState);
   if (!savedState || savedState !== state) {
     clearOAuthState();
     throw new Error("Spotify OAuth state mismatch.");
