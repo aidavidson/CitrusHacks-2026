@@ -126,6 +126,18 @@
       const clientIdInput = document.getElementById("spotify-client-id");
       const saveClientIdButton = document.getElementById("save-client-id-button");
 
+      function setAuthStatus(message) {
+        if (authStatus) {
+          authStatus.textContent = message;
+        }
+      }
+
+      function setLoginButtonLabel(message) {
+        if (loginButton) {
+          loginButton.textContent = message;
+        }
+      }
+
       function loadSavedClientId() {
         const savedClientId = window.localStorage.getItem("spotify_client_id");
         if (!savedClientId) {
@@ -142,7 +154,7 @@
       function saveClientId() {
         const clientId = clientIdInput?.value.trim() ?? "";
         if (!clientId) {
-          authStatus.textContent = "Enter a Spotify Client ID before saving.";
+          setAuthStatus("Enter a Spotify Client ID before saving.");
           return false;
         }
 
@@ -151,25 +163,25 @@
           ...window.__APP_CONFIG__,
           spotifyClientId: clientId,
         };
-        authStatus.textContent = "Spotify Client ID saved locally for this browser.";
+        setAuthStatus("Spotify Client ID saved locally for this browser.");
         return true;
       }
 
       function updateAuthUi(profile) {
         if (profile) {
-          loginButton.textContent = "Disconnect Spotify";
-          authStatus.textContent = `Connected as ${profile.display_name ?? "Spotify user"}.`;
+          setLoginButtonLabel("Disconnect Spotify");
+          setAuthStatus(`Connected as ${profile.display_name ?? "Spotify user"}.`);
           return;
         }
 
         if (isSpotifyConnected()) {
-          loginButton.textContent = "Disconnect Spotify";
-          authStatus.textContent = "Spotify connected. Ready to fetch your listening data.";
+          setLoginButtonLabel("Disconnect Spotify");
+          setAuthStatus("Spotify connected. Ready to fetch your listening data.");
           return;
         }
 
-        loginButton.textContent = "Connect Your Spotify";
-        authStatus.textContent = "Connect Spotify to load your listening data.";
+        setLoginButtonLabel("Connect Your Spotify");
+        setAuthStatus("Connect Spotify to load your listening data.");
       }
 
       async function initializeSpotifyAuth() {
@@ -184,8 +196,8 @@
           }
         } catch (error) {
           console.error(error);
-          authStatus.textContent = error.message;
-          loginButton.textContent = "Connect Your Spotify";
+          setAuthStatus(error.message);
+          setLoginButtonLabel("Connect Your Spotify");
         }
       }
 
@@ -196,7 +208,7 @@
           return;
         }
 
-        authStatus.textContent = "Redirecting to Spotify...";
+        setAuthStatus("Redirecting to Spotify...");
 
         try {
           if (!saveClientId()) {
@@ -206,7 +218,7 @@
           await startSpotifyLogin();
         } catch (error) {
           console.error(error);
-          authStatus.textContent = error.message;
+          setAuthStatus(error.message);
         }
       });
 
