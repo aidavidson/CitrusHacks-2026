@@ -568,23 +568,6 @@ h1 {
   background: var(--panel-strong);
 }
 
-.clean-panel {
-  display: grid;
-  place-items: center;
-  min-height: 140px;
-}
-
-.clean-panel-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.clean-button {
-  min-width: 180px;
-}
-
 @keyframes rise {
   from {
     transform: scaleY(0.2);

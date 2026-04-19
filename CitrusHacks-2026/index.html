@@ -121,26 +121,11 @@
        </aside>
 
        <section class="dashboard-grid">
-         <article class="panel">
-           <div class="panel-heading">
-             <h3>Least Skipped Songs</h3>
-           </div>
-           <div class="track-list" id="liked-songs"></div>
-         </article>
-
-
          <article class="panel accent-panel">
            <div class="panel-heading">
              <h3>Most Skipped Songs</h3>
            </div>
            <div class="artist-list" id="skipped-songs"></div>
-         </article>
-
-
-         <article class="panel wide-panel clean-panel">
-           <div class="clean-panel-actions">
-             <button class="primary-button clean-button">Clean</button>
-           </div>
          </article>
        </section>
      </section>
@@ -334,6 +319,14 @@
 	       sessions.push(sessionEntry);
 	       window.localStorage.setItem(SORTIFY_SESSIONS_KEY, JSON.stringify(sessions));
 	       updateSortifyDebugPanel();
+	       window.dispatchEvent(
+	         new CustomEvent("sortify-stats-changed", {
+	           detail: {
+	             songsPlayed: sessions.length,
+	             songsSkipped: sessions.filter((session) => session?.classification === "skipped").length,
+	           },
+	         })
+	       );
 	     }
 
 	     function saveSortifyThresholdEvent(eventEntry) {
