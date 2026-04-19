@@ -17,6 +17,10 @@
 	     id="rate-limit-warning"
 	     style="display: none; position: fixed; top: 16px; right: 16px; z-index: 9999; max-width: 320px; padding: 12px 14px; border: 1px solid rgba(255, 133, 133, 0.55); border-radius: 12px; background: rgba(61, 10, 18, 0.94); color: #ffe4e6; font-size: 12px; line-height: 1.45; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);"
 	   ></div>
+	   <pre
+	     id="sortify-debug"
+	     style="position: fixed; bottom: 16px; right: 16px; z-index: 9998; max-width: 360px; max-height: 220px; overflow: auto; margin: 0; padding: 10px 12px; border-radius: 12px; background: rgba(10, 10, 18, 0.82); color: #f8fafc; font-size: 11px;"
+	   ></pre>
 	   <div class="gradient-container">
 	     <div class="gradient-orb gradient-orb-blue"></div>
      <div class="gradient-orb gradient-orb-red"></div>
@@ -94,16 +98,20 @@
          </article>
        </section>
 
-       <aside class="now-playing-card dashboard-now-playing">
-         <div class="now-playing-cover" id="now-playing-cover"></div>
-         <div class="now-playing-meta">
-           <p class="mini-label">Now playing</p>
-           <h2 id="now-playing-title"></h2>
-           <p id="now-playing-artist"></p>
-         </div>
-         <div class="progress-block">
-           <div class="progress-line">
-             <span id="now-playing-progress"></span>
+	       <aside class="now-playing-card dashboard-now-playing">
+	         <div class="now-playing-cover" id="now-playing-cover"></div>
+	         <div class="now-playing-meta">
+	           <p class="mini-label">Now playing</p>
+	           <h2 id="now-playing-title"></h2>
+	           <p id="now-playing-artist"></p>
+	         </div>
+	         <p
+	           id="threshold-notice"
+	           style="margin: 6px 0 0; color: #fef08a; font-size: 12px;"
+	         ></p>
+	         <div class="progress-block">
+	           <div class="progress-line">
+	             <span id="now-playing-progress"></span>
            </div>
            <div class="progress-time">
              <span id="now-playing-current-time"></span>
@@ -163,10 +171,22 @@
 	     const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
 	     const nowPlayingDuration = document.getElementById("now-playing-duration");
 	     const nowPlayingProgress = document.getElementById("now-playing-progress");
+	     const thresholdNotice = document.getElementById("threshold-notice");
 	     const rateLimitWarning = document.getElementById("rate-limit-warning");
+	     const sortifyDebug = document.getElementById("sortify-debug");
+	     const SKIP_THRESHOLD = 0.20;
+	     const ACTIVE_POLL_INTERVAL_MS = 5000;
+	     const POST_THRESHOLD_POLL_INTERVAL_MS = 20000;
+	     const IDLE_POLL_INTERVAL_MS = 60000;
 	     let nowPlayingPollId = null;
 	     let spotifyCooldownTimeoutId = null;
 	     let isNowPlayingRequestInFlight = false;
+	     let previousTrack = null;
+	     let currentPlaybackDebug = null;
+	     let currentPollIntervalMs = ACTIVE_POLL_INTERVAL_MS;
+	     const SORTIFY_SESSIONS_KEY = "sortify_sessions";
+	     const SORTIFY_THRESHOLD_EVENTS_KEY = "sortify_threshold_events";
+	     let lastThresholdEventTrackId = null;
 
 
      function setAuthStatus(message) {
@@ -227,21 +247,227 @@
 	       }, retryAfterSeconds * 1000);
 	     }
 
-     function formatMs(ms) {
-       if (!Number.isFinite(ms) || ms < 0) {
-         return "--:--";
-       }
+	     function formatMs(ms) {
+	       if (!Number.isFinite(ms) || ms < 0) {
+	         return "--:--";
+	       }
 
        const totalSeconds = Math.floor(ms / 1000);
        const minutes = Math.floor(totalSeconds / 60);
-       const seconds = totalSeconds % 60;
-       return `${minutes}:${String(seconds).padStart(2, "0")}`;
-     }
+	       const seconds = totalSeconds % 60;
+	       return `${minutes}:${String(seconds).padStart(2, "0")}`;
+	     }
 
-     function resetNowPlayingUi(message = "Nothing is playing right now.") {
-       if (nowPlayingTitle) {
-         nowPlayingTitle.textContent = "No active track";
-       }
+	     function updateThresholdNotice(message = "") {
+	       if (thresholdNotice) {
+	         thresholdNotice.textContent = message;
+	       }
+	     }
+
+	     function classifyTrack(progress_ms, duration_ms) {
+	       if (progress_ms == null || !Number.isFinite(duration_ms) || duration_ms <= 0) {
+	         return "unknown";
+	       }
+
+	       if (!Number.isFinite(progress_ms)) {
+	         return "unknown";
+	       }
+
+	       return progress_ms / duration_ms < SKIP_THRESHOLD ? "skipped" : "completed";
+	     }
+
+	     // classifyTrack(30000, 180000)  // 16.7% -> skipped
+	     // classifyTrack(99000, 180000)  // 55.0% -> completed
+	     // classifyTrack(120000, 180000) // 66.7% -> completed
+	     // classifyTrack(0, 180000)      // 0% -> skipped
+	     // classifyTrack(null, 180000)   // missing -> unknown
+	     // classifyTrack(30000, 0)       // divide by zero -> unknown
+
+	     function getSortifySessions() {
+	       const rawSessions = window.localStorage.getItem(SORTIFY_SESSIONS_KEY);
+	       if (!rawSessions) {
+	         return [];
+	       }
+
+	       try {
+	         const parsedSessions = JSON.parse(rawSessions);
+	         return Array.isArray(parsedSessions) ? parsedSessions : [];
+	       } catch {
+	         return [];
+	       }
+	     }
+
+	     function getSortifyThresholdEvents() {
+	       const rawEvents = window.localStorage.getItem(SORTIFY_THRESHOLD_EVENTS_KEY);
+	       if (!rawEvents) {
+	         return [];
+	       }
+
+	       try {
+	         const parsedEvents = JSON.parse(rawEvents);
+	         return Array.isArray(parsedEvents) ? parsedEvents : [];
+	       } catch {
+	         return [];
+	       }
+	     }
+
+	     function updateSortifyDebugPanel() {
+	       if (!sortifyDebug) {
+	         return;
+	       }
+
+	       const recentSessions = getSortifySessions().slice(-5);
+	       const recentThresholdEvents = getSortifyThresholdEvents().slice(-5);
+	       sortifyDebug.textContent = JSON.stringify(
+	         {
+	           currentPlayback: currentPlaybackDebug,
+	           recentThresholdEvents,
+	           recentSessions,
+	         },
+	         null,
+	         2
+	       );
+	     }
+
+	     function saveSortifySession(sessionEntry) {
+	       const sessions = getSortifySessions();
+	       sessions.push(sessionEntry);
+	       window.localStorage.setItem(SORTIFY_SESSIONS_KEY, JSON.stringify(sessions));
+	       updateSortifyDebugPanel();
+	     }
+
+	     function saveSortifyThresholdEvent(eventEntry) {
+	       const events = getSortifyThresholdEvents();
+	       events.push(eventEntry);
+	       window.localStorage.setItem(SORTIFY_THRESHOLD_EVENTS_KEY, JSON.stringify(events));
+	       updateSortifyDebugPanel();
+	     }
+
+	     async function logRecentlyPlayedComparison(sessionEntry) {
+	       const response = await spotifyFetch("/me/player/recently-played?limit=50");
+	       if (!response.ok) {
+	         return;
+	       }
+
+	       const recentlyPlayedData = await response.json();
+	       const recentlyPlayedIds = recentlyPlayedData.items?.map((item) => item.track?.id).filter(Boolean) ?? [];
+	       if (recentlyPlayedIds.includes(sessionEntry.trackId)) {
+	         console.log(`[Sortify] MATCH - "${sessionEntry.trackName}" found in recently played`);
+	         return;
+	       }
+
+	       console.log(`[Sortify] NO MATCH - "${sessionEntry.trackName}" not found in recently played`);
+	     }
+
+	     async function recordClassification(trackSnapshot) {
+	       if (!trackSnapshot?.id) {
+	         return;
+	       }
+
+	       const percentPlayed = trackSnapshot.duration_ms > 0 && Number.isFinite(trackSnapshot.progress_ms)
+	         ? trackSnapshot.progress_ms / trackSnapshot.duration_ms
+	         : null;
+	       const classification = classifyTrack(trackSnapshot.progress_ms, trackSnapshot.duration_ms);
+	       const sessionEntry = {
+	         trackId: trackSnapshot.id,
+	         trackName: trackSnapshot.name,
+	         percentPlayed,
+	         classification,
+	         timestamp: new Date().toISOString(),
+	       };
+
+	       console.log("[Sortify] Classification", {
+	         name: sessionEntry.trackName,
+	         percentPlayed: sessionEntry.percentPlayed,
+	         classification: sessionEntry.classification,
+	         timestamp: sessionEntry.timestamp,
+	       });
+
+	       saveSortifySession(sessionEntry);
+	       await logRecentlyPlayedComparison(sessionEntry);
+	     }
+
+	     function maybeRecordThresholdEvent(trackSnapshot) {
+	       if (!trackSnapshot?.id || !Number.isFinite(trackSnapshot.duration_ms) || trackSnapshot.duration_ms <= 0) {
+	         return;
+	       }
+
+	       const thresholdMs = trackSnapshot.duration_ms * SKIP_THRESHOLD;
+	       if (trackSnapshot.progress_ms < thresholdMs) {
+	         return;
+	       }
+
+	       if (lastThresholdEventTrackId === trackSnapshot.id) {
+	         return;
+	       }
+
+	       const thresholdEvent = {
+	         trackId: trackSnapshot.id,
+	         trackName: trackSnapshot.name,
+	         threshold: SKIP_THRESHOLD,
+	         thresholdMs,
+	         progressMs: trackSnapshot.progress_ms,
+	         timestamp: new Date().toISOString(),
+	       };
+
+	       console.log("[Sortify] Threshold reached", thresholdEvent);
+	       saveSortifyThresholdEvent(thresholdEvent);
+	       lastThresholdEventTrackId = trackSnapshot.id;
+	     }
+
+	     async function maybeClassifyPreviousTrack(currentTrack) {
+	       // HOOK: future skip counter and ranking logic goes here
+	       // Polling every 15 seconds is snapshot-based, so very short tracks and rapid skips can be missed or misclassified.
+	       if (!currentTrack?.id) {
+	         return;
+	       }
+
+	       if (!previousTrack) {
+	         previousTrack = currentTrack;
+	         return;
+	       }
+
+	       if (previousTrack.id === currentTrack.id) {
+	         previousTrack = {
+	           ...previousTrack,
+	           progress_ms: currentTrack.progress_ms,
+	           is_playing: currentTrack.is_playing,
+	         };
+	         return;
+	       }
+
+	       await recordClassification(previousTrack);
+	       previousTrack = currentTrack;
+	     }
+
+	     async function finalizePreviousTrackOnStop() {
+	       if (!previousTrack?.id) {
+	         return;
+	       }
+
+	       await recordClassification(previousTrack);
+	       previousTrack = null;
+	     }
+
+	     function restartNowPlayingPolling(intervalMs = currentPollIntervalMs) {
+	       currentPollIntervalMs = intervalMs;
+
+	       if (nowPlayingPollId) {
+	         window.clearInterval(nowPlayingPollId);
+	       }
+
+	       nowPlayingPollId = window.setInterval(() => {
+	         loadCurrentlyPlaying().catch((error) => {
+	           console.error(error);
+	           setAuthStatus(error.message);
+	         });
+	       }, currentPollIntervalMs);
+	     }
+
+	     function resetNowPlayingUi(message = "Nothing is playing right now.") {
+	       if (nowPlayingTitle) {
+	         nowPlayingTitle.textContent = "No active track";
+	       }
 
        if (nowPlayingArtist) {
          nowPlayingArtist.textContent = message;
@@ -259,12 +485,14 @@
          nowPlayingProgress.style.width = "0%";
        }
 
-       if (nowPlayingCover) {
-         nowPlayingCover.style.backgroundImage = `
-           linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
-         `;
-       }
-     }
+	       if (nowPlayingCover) {
+	         nowPlayingCover.style.backgroundImage = `
+	           linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+	         `;
+	       }
+
+	       updateThresholdNotice("");
+	     }
 
      function renderNowPlaying(trackData) {
        const item = trackData?.item;
@@ -273,11 +501,12 @@
          return;
        }
 
-       const artistName = item.artists?.[0]?.name ?? "Unknown artist";
-       const coverUrl = item.album?.images?.[0]?.url ?? "";
-       const progressMs = trackData.progress_ms ?? 0;
-       const durationMs = item.duration_ms ?? 0;
-       const percentComplete = durationMs > 0 ? (progressMs / durationMs) * 100 : 0;
+	       const artistName = item.artists?.[0]?.name ?? "Unknown artist";
+	       const coverUrl = item.album?.images?.[0]?.url ?? "";
+	       const progressMs = trackData.progress_ms ?? 0;
+	       const durationMs = item.duration_ms ?? 0;
+	       const percentComplete = durationMs > 0 ? (progressMs / durationMs) * 100 : 0;
+	       const thresholdMs = durationMs * SKIP_THRESHOLD;
 
        if (nowPlayingTitle) {
          nowPlayingTitle.textContent = item.name ?? "Unknown track";
@@ -299,17 +528,33 @@
          nowPlayingProgress.style.width = `${Math.min(Math.max(percentComplete, 0), 100)}%`;
        }
 
-       if (nowPlayingCover) {
-         nowPlayingCover.style.backgroundImage = coverUrl
+	       if (nowPlayingCover) {
+	         nowPlayingCover.style.backgroundImage = coverUrl
            ? `
              linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.4)),
              url("${coverUrl}")
            `
-           : `
-             linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
-           `;
-       }
-     }
+	           : `
+	             linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+	           `;
+	       }
+
+	       if (durationMs > 0 && progressMs >= thresholdMs) {
+	         updateThresholdNotice(
+	           `Threshold reached at ${formatMs(thresholdMs)}. Safe to skip for a completed-test.`
+	         );
+	         return;
+	       }
+
+	       if (durationMs > 0) {
+	         updateThresholdNotice(
+	           `Completed-test threshold at ${formatMs(thresholdMs)}.`
+	         );
+	         return;
+	       }
+
+	       updateThresholdNotice("");
+	     }
 
      async function loadCurrentlyPlaying() {
        if (!isSpotifyConnected()) {
@@ -323,10 +568,10 @@
 
        isNowPlayingRequestInFlight = true;
 
-       try {
-       const response = await spotifyFetch("/me/player/currently-playing");
+	       try {
+	         const response = await spotifyFetch("/me/player/currently-playing");
 
-         if (response.status === 429) {
+	         if (response.status === 429) {
            const retryAfterSeconds = getRetryAfterSeconds(response);
            scheduleSpotifyCooldown(retryAfterSeconds, () => {
              if (isSpotifyConnected()) {
@@ -334,43 +579,73 @@
              }
            });
            return null;
-         }
+	         }
 
-         if (response.status === 204) {
-           resetNowPlayingUi();
-           return null;
-         }
+	         if (response.status === 204) {
+	           currentPlaybackDebug = {
+	             status: 204,
+	             isPlaying: false,
+	             note: "No active track",
+	             polledAt: new Date().toISOString(),
+	           };
+	           updateSortifyDebugPanel();
+	           await finalizePreviousTrackOnStop();
+	           if (currentPollIntervalMs !== IDLE_POLL_INTERVAL_MS) {
+	             restartNowPlayingPolling(IDLE_POLL_INTERVAL_MS);
+	           }
+	           resetNowPlayingUi();
+	           return null;
+	         }
 
          if (!response.ok) {
            throw new Error("Could not load current Spotify playback.");
          }
 
-         const trackData = await response.json();
-         console.log("Spotify currently playing JSON:", trackData);
-         renderNowPlaying(trackData);
-         return trackData;
+	         const trackData = await response.json();
+	       const currentTrack = {
+	         id: trackData?.item?.id ?? null,
+	         name: trackData?.item?.name ?? "Unknown track",
+	         duration_ms: trackData?.item?.duration_ms ?? 0,
+	         progress_ms: trackData?.progress_ms ?? 0,
+	         is_playing: trackData?.is_playing ?? false,
+	       };
+	       const hasReachedThreshold =
+	         currentTrack.duration_ms > 0 &&
+	         currentTrack.progress_ms >= currentTrack.duration_ms * SKIP_THRESHOLD;
+	       maybeRecordThresholdEvent(currentTrack);
+	       currentPlaybackDebug = {
+	         status: response.status,
+		           trackId: currentTrack.id,
+		           trackName: currentTrack.name,
+	           progress_ms: currentTrack.progress_ms,
+	           duration_ms: currentTrack.duration_ms,
+	           is_playing: currentTrack.is_playing,
+		           polledAt: new Date().toISOString(),
+		         };
+		         updateSortifyDebugPanel();
+		         if (hasReachedThreshold && currentPollIntervalMs !== POST_THRESHOLD_POLL_INTERVAL_MS) {
+		           restartNowPlayingPolling(POST_THRESHOLD_POLL_INTERVAL_MS);
+		         } else if (!hasReachedThreshold && currentPollIntervalMs !== ACTIVE_POLL_INTERVAL_MS) {
+		           restartNowPlayingPolling(ACTIVE_POLL_INTERVAL_MS);
+		         }
+	         await maybeClassifyPreviousTrack(currentTrack);
+	         console.log("Spotify currently playing JSON:", trackData);
+	         renderNowPlaying(trackData);
+	         return trackData;
        } finally {
          isNowPlayingRequestInFlight = false;
        }
      }
 
-     function startNowPlayingPolling() {
-       if (nowPlayingPollId) {
-         window.clearInterval(nowPlayingPollId);
-       }
+	     function startNowPlayingPolling() {
+	       currentPollIntervalMs = ACTIVE_POLL_INTERVAL_MS;
+	       loadCurrentlyPlaying().catch((error) => {
+	         console.error(error);
+	         setAuthStatus(error.message);
+	       });
 
-       loadCurrentlyPlaying().catch((error) => {
-         console.error(error);
-         setAuthStatus(error.message);
-       });
-
-       nowPlayingPollId = window.setInterval(() => {
-         loadCurrentlyPlaying().catch((error) => {
-           console.error(error);
-           setAuthStatus(error.message);
-         });
-       }, 10000);
-     }
+	       restartNowPlayingPolling(ACTIVE_POLL_INTERVAL_MS);
+	     }
 
      function stopNowPlayingPolling() {
        if (nowPlayingPollId) {
@@ -494,12 +769,15 @@
 
 
      loginButton?.addEventListener("click", async () => {
-       if (isSpotifyConnected()) {
-         stopNowPlayingPolling();
-         clearSpotifyCooldown();
-         logoutSpotify();
-         updateAuthUi(null);
-         resetNowPlayingUi("Connect Spotify to load current song data.");
+	       if (isSpotifyConnected()) {
+	       stopNowPlayingPolling();
+	       clearSpotifyCooldown();
+	       currentPlaybackDebug = null;
+	       previousTrack = null;
+	       lastThresholdEventTrackId = null;
+	       logoutSpotify();
+	       updateAuthUi(null);
+	       resetNowPlayingUi("Connect Spotify to load current song data.");
          return;
        }
 
@@ -529,6 +807,9 @@
 	       stopNowPlayingPolling();
 	       clearSpotifyCooldown();
 	       hideRateLimitWarning();
+	       currentPlaybackDebug = null;
+	       previousTrack = null;
+	       lastThresholdEventTrackId = null;
 	       logoutSpotify();
 	       updateAuthUi(null);
 	     });
@@ -561,6 +842,7 @@
 	       );
 	     });
 
+	     updateSortifyDebugPanel();
 	     initializeSpotifyAuth();
 	   </script>
  </body>
