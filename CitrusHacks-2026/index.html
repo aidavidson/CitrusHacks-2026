@@ -1,224 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sortify</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="gradient-container">
-      <div class="gradient-orb gradient-orb-blue"></div>
-      <div class="gradient-orb gradient-orb-red"></div>
-      <div class="gradient-orb gradient-orb-indigo"></div>
-      <div class="gradient-wave gradient-wave-one"></div>
-      <div class="gradient-wave gradient-wave-two"></div>
-      <div class="gradient-mesh"></div>
-    </div>
-    <div class="background-glow background-glow-left"></div>
-    <div class="background-glow background-glow-right"></div>
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Sortify</title>
+   <link rel="preconnect" href="https://fonts.googleapis.com" />
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+   <link
+     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+     rel="stylesheet"
+   />
+   <link rel="stylesheet" href="style.css" />
+ </head>
+ <body>
+   <div class="gradient-container">
+     <div class="gradient-orb gradient-orb-blue"></div>
+     <div class="gradient-orb gradient-orb-red"></div>
+     <div class="gradient-orb gradient-orb-indigo"></div>
+     <div class="gradient-wave gradient-wave-one"></div>
+     <div class="gradient-wave gradient-wave-two"></div>
+     <div class="gradient-mesh"></div>
+   </div>
+   <div class="background-glow background-glow-left"></div>
+   <div class="background-glow background-glow-right"></div>
 
-    <main class="page-shell">
-      <section class="hero-card">
-        <div class="hero-copy">
-          <p class="eyebrow">Personal music dashboard</p>
-          <h1>Clean up Your Playlists.</h1>
-          <p class="hero-text">
-            find songs you may not want to listen to anymore and encourage musical growth.
-          </p>
 
-          <div class="hero-actions">
-            <button class="primary-button" id="connect-spotify-button">Connect Your Spotify</button>
-            <button class="secondary-button" id="check-skipped-button">Check Skipped</button>
-          </div>
-          <div class="client-config">
-            <label class="client-config-label" for="spotify-client-id">
-              Spotify Client ID
-            </label>
-            <div class="client-config-row">
-              <input
-                class="client-config-input"
-                id="spotify-client-id"
-                name="spotify-client-id"
-                type="text"
-                placeholder="Paste your Spotify Client ID"
-                autocomplete="off"
-                spellcheck="false"
-              />
-              <button class="secondary-button client-config-button" id="save-client-id-button">
-                Save ID
-              </button>
-            </div>
-          </div>
-          <p class="auth-status" id="auth-status">Connect Spotify to load your listening data.</p>
+   <main class="page-shell">
+     <section class="hero-card landing-page" id="landing-page">
+       <div class="hero-copy">
+         <p class="eyebrow">Personal music dashboard</p>
+         <h1>Clean up Your Playlists.</h1>
+         <p class="hero-text">
+           find songs you may not want to listen to anymore and encourage musical growth.
+         </p>
 
-          <div class="stat-strip">
-            <article>
-              <span class="stat-number" id="songs-played-value"></span>
-              <span class="stat-label" id="songs-played-label"></span>
-            </article>
-            <article>
-              <span class="stat-number" id="songs-skipped-value"></span>
-              <span class="stat-label" id="songs-skipped-label"></span>
-            </article>
-          </div>
-        </div>
 
-        <aside class="now-playing-card">
-          <div class="now-playing-cover" id="now-playing-cover"></div>
-          <div class="now-playing-meta">
-            <p class="mini-label">Now playing</p>
-            <h2 id="now-playing-title"></h2>
-            <p id="now-playing-artist"></p>
-          </div>
-          <div class="progress-block">
-            <div class="progress-line">
-              <span id="now-playing-progress"></span>
-            </div>
-            <div class="progress-time">
-              <span id="now-playing-current-time"></span>
-              <span id="now-playing-duration"></span>
-            </div>
-          </div>
-        </aside>
-      </section>
+         <div class="hero-actions">
+           <button class="primary-button" id="login-button">Connect Your Spotify</button>
+           <button class="secondary-button" id="check-skipped-button">Check Skipped</button>
+         </div>
+         <div class="client-config">
+           <label class="client-config-label" for="spotify-client-id">
+             Spotify Client ID
+           </label>
+           <div class="client-config-row">
+             <input
+               class="client-config-input"
+               id="spotify-client-id"
+               name="spotify-client-id"
+               type="text"
+               placeholder="Paste your Spotify Client ID"
+               autocomplete="off"
+               spellcheck="false"
+             />
+             <button class="secondary-button client-config-button" id="save-client-id-button">
+               Save ID
+             </button>
+           </div>
+         </div>
+         <p class="auth-status" id="auth-status">Connect Spotify to load your listening data.</p>
+       </div>
+     </section>
 
-      <section class="dashboard-grid">
-        <article class="panel">
-          <div class="panel-heading">
-            <h3>Least Skipped Songs</h3>
-          </div>
-          <div class="track-list" id="liked-songs"></div>
-        </article>
+     <section class="dashboard-page is-hidden" id="dashboard-page">
+       <header class="dashboard-topbar">
+         <div class="dashboard-branding">
+           <h2 class="sortify-title">Sortify</h2>
+           <p class="welcome-title">Welcome <span id="welcome-user-name">Spotify user</span></p>
+           <img
+             class="logo dashboard-hero-image"
+             src="book-logo2.png"
+             alt="Sortify bookshelf illustration"
+           />
+           <div class="dashboard-button-row">
+             <button class="primary-button" id="disconnect-button">Disconnect Spotify</button>
+             <button class="secondary-button" id="dashboard-check-skipped-button">Check Skipped</button>
+           </div>
+         </div>
+       </header>
 
-        <article class="panel accent-panel">
-          <div class="panel-heading">
-            <h3>Most Skipped Songs</h3>
-          </div>
-          <div class="artist-list" id="skipped-songs"></div>
-        </article>
+       <section class="stat-strip dashboard-stat-strip">
+         <article>
+           <span class="stat-number" id="songs-played-value"></span>
+           <span class="stat-label" id="songs-played-label"></span>
+         </article>
+         <article>
+           <span class="stat-number" id="songs-skipped-value"></span>
+           <span class="stat-label" id="songs-skipped-label"></span>
+         </article>
+       </section>
 
-        <article class="panel wide-panel clean-panel">
-          <button class="primary-button clean-button">Clean</button>
-        </article>
-      </section>
-    </main>
+       <aside class="now-playing-card dashboard-now-playing">
+         <div class="now-playing-cover" id="now-playing-cover"></div>
+         <div class="now-playing-meta">
+           <p class="mini-label">Now playing</p>
+           <h2 id="now-playing-title"></h2>
+           <p id="now-playing-artist"></p>
+         </div>
+         <div class="progress-block">
+           <div class="progress-line">
+             <span id="now-playing-progress"></span>
+           </div>
+           <div class="progress-time">
+             <span id="now-playing-current-time"></span>
+             <span id="now-playing-duration"></span>
+           </div>
+         </div>
+       </aside>
 
-    <script src="script.js"></script>
-    <script src="app-config.js"></script>
-    <script type="module">
-      import {
-        fetchCurrentUserProfile,
-        handleSpotifyCallback,
-        isSpotifyConnected,
-        logoutSpotify,
-        startSpotifyLogin,
-      } from "../frontend/js/auth.js";
+       <section class="dashboard-grid">
+         <article class="panel">
+           <div class="panel-heading">
+             <h3>Least Skipped Songs</h3>
+           </div>
+           <div class="track-list" id="liked-songs"></div>
+         </article>
 
-      const loginButton = document.getElementById("login-button");
-      const authStatus = document.getElementById("auth-status");
-      const clientIdInput = document.getElementById("spotify-client-id");
-      const saveClientIdButton = document.getElementById("save-client-id-button");
 
-      function loadSavedClientId() {
-        const savedClientId = window.localStorage.getItem("spotify_client_id");
-        if (!savedClientId) {
-          return "";
-        }
+         <article class="panel accent-panel">
+           <div class="panel-heading">
+             <h3>Most Skipped Songs</h3>
+           </div>
+           <div class="artist-list" id="skipped-songs"></div>
+         </article>
 
-        window.__APP_CONFIG__ = {
-          ...window.__APP_CONFIG__,
-          spotifyClientId: savedClientId,
-        };
-        return savedClientId;
-      }
 
-      function saveClientId() {
-        const clientId = clientIdInput?.value.trim() ?? "";
-        if (!clientId) {
-          authStatus.textContent = "Enter a Spotify Client ID before saving.";
-          return false;
-        }
+         <article class="panel wide-panel clean-panel">
+           <div class="clean-panel-actions">
+             <button class="primary-button clean-button">Clean</button>
+           </div>
+         </article>
+       </section>
+     </section>
+   </main>
 
-        window.localStorage.setItem("spotify_client_id", clientId);
-        window.__APP_CONFIG__ = {
-          ...window.__APP_CONFIG__,
-          spotifyClientId: clientId,
-        };
-        authStatus.textContent = "Spotify Client ID saved locally for this browser.";
-        return true;
-      }
 
-      function updateAuthUi(profile) {
-        if (profile) {
-          loginButton.textContent = "Disconnect Spotify";
-          authStatus.textContent = `Connected as ${profile.display_name ?? "Spotify user"}.`;
-          return;
-        }
+   <script src="script.js"></script>
+   <script src="app-config.js"></script>
+   <script type="module">
+     import {
+       fetchCurrentUserProfile,
+       handleSpotifyCallback,
+       isSpotifyConnected,
+       logoutSpotify,
+       spotifyFetch,
+       startSpotifyLogin,
+     } from "../frontend/js/auth.js";
 
-        if (isSpotifyConnected()) {
-          loginButton.textContent = "Disconnect Spotify";
-          authStatus.textContent = "Spotify connected. Ready to fetch your listening data.";
-          return;
-        }
 
-        loginButton.textContent = "Connect Your Spotify";
-        authStatus.textContent = "Connect Spotify to load your listening data.";
-      }
+     const loginButton = document.getElementById("login-button");
+     const disconnectButton = document.getElementById("disconnect-button");
+     const authStatus = document.getElementById("auth-status");
+     const clientIdInput = document.getElementById("spotify-client-id");
+     const saveClientIdButton = document.getElementById("save-client-id-button");
+     const nowPlayingTitle = document.getElementById("now-playing-title");
+     const nowPlayingArtist = document.getElementById("now-playing-artist");
+     const nowPlayingCover = document.getElementById("now-playing-cover");
+     const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+     const nowPlayingDuration = document.getElementById("now-playing-duration");
+     const nowPlayingProgress = document.getElementById("now-playing-progress");
+     let nowPlayingPollId = null;
 
-      async function initializeSpotifyAuth() {
-        try {
-          await handleSpotifyCallback();
 
-          if (isSpotifyConnected()) {
-            const profile = await fetchCurrentUserProfile();
-            updateAuthUi(profile);
-          } else {
-            updateAuthUi(null);
-          }
-        } catch (error) {
-          console.error(error);
-          authStatus.textContent = error.message;
-          loginButton.textContent = "Connect Your Spotify";
-        }
-      }
+     function setAuthStatus(message) {
+       if (authStatus) {
+         authStatus.textContent = message;
+       }
+     }
 
-      loginButton?.addEventListener("click", async () => {
-        if (isSpotifyConnected()) {
-          logoutSpotify();
-          updateAuthUi(null);
-          return;
-        }
 
-        authStatus.textContent = "Redirecting to Spotify...";
+     function setLoginButtonLabel(message) {
+       if (loginButton) {
+         loginButton.textContent = message;
+       }
+     }
 
-        try {
-          if (!saveClientId()) {
-            return;
-          }
+     function formatMs(ms) {
+       if (!Number.isFinite(ms) || ms < 0) {
+         return "--:--";
+       }
 
-          await startSpotifyLogin();
-        } catch (error) {
-          console.error(error);
-          authStatus.textContent = error.message;
-        }
-      });
+       const totalSeconds = Math.floor(ms / 1000);
+       const minutes = Math.floor(totalSeconds / 60);
+       const seconds = totalSeconds % 60;
+       return `${minutes}:${String(seconds).padStart(2, "0")}`;
+     }
 
-      saveClientIdButton?.addEventListener("click", () => {
-        saveClientId();
-      });
+     function resetNowPlayingUi(message = "Nothing is playing right now.") {
+       if (nowPlayingTitle) {
+         nowPlayingTitle.textContent = "No active track";
+       }
 
-      if (clientIdInput) {
-        clientIdInput.value = loadSavedClientId();
-      }
+       if (nowPlayingArtist) {
+         nowPlayingArtist.textContent = message;
+       }
 
-      initializeSpotifyAuth();
-    </script>
-  </body>
+       if (nowPlayingCurrentTime) {
+         nowPlayingCurrentTime.textContent = "--:--";
+       }
+
+       if (nowPlayingDuration) {
+         nowPlayingDuration.textContent = "--:--";
+       }
+
+       if (nowPlayingProgress) {
+         nowPlayingProgress.style.width = "0%";
+       }
+
+       if (nowPlayingCover) {
+         nowPlayingCover.style.backgroundImage = `
+           linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+         `;
+       }
+     }
+
+     function renderNowPlaying(trackData) {
+       const item = trackData?.item;
+       if (!item) {
+         resetNowPlayingUi();
+         return;
+       }
+
+       const artistName = item.artists?.[0]?.name ?? "Unknown artist";
+       const coverUrl = item.album?.images?.[0]?.url ?? "";
+       const progressMs = trackData.progress_ms ?? 0;
+       const durationMs = item.duration_ms ?? 0;
+       const percentComplete = durationMs > 0 ? (progressMs / durationMs) * 100 : 0;
+
+       if (nowPlayingTitle) {
+         nowPlayingTitle.textContent = item.name ?? "Unknown track";
+       }
+
+       if (nowPlayingArtist) {
+         nowPlayingArtist.textContent = artistName;
+       }
+
+       if (nowPlayingCurrentTime) {
+         nowPlayingCurrentTime.textContent = formatMs(progressMs);
+       }
+
+       if (nowPlayingDuration) {
+         nowPlayingDuration.textContent = formatMs(durationMs);
+       }
+
+       if (nowPlayingProgress) {
+         nowPlayingProgress.style.width = `${Math.min(Math.max(percentComplete, 0), 100)}%`;
+       }
+
+       if (nowPlayingCover) {
+         nowPlayingCover.style.backgroundImage = coverUrl
+           ? `
+             linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.4)),
+             url("${coverUrl}")
+           `
+           : `
+             linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+           `;
+       }
+     }
+
+     async function loadCurrentlyPlaying() {
+       if (!isSpotifyConnected()) {
+         resetNowPlayingUi("Connect Spotify to load current song data.");
+         return null;
+       }
+
+       const response = await spotifyFetch("/me/player/currently-playing");
+
+       if (response.status === 204) {
+         resetNowPlayingUi();
+         return null;
+       }
+
+       if (!response.ok) {
+         throw new Error("Could not load current Spotify playback.");
+       }
+
+       const trackData = await response.json();
+       console.log("Spotify currently playing JSON:", trackData);
+       renderNowPlaying(trackData);
+       return trackData;
+     }
+
+     function startNowPlayingPolling() {
+       if (nowPlayingPollId) {
+         window.clearInterval(nowPlayingPollId);
+       }
+
+       loadCurrentlyPlaying().catch((error) => {
+         console.error(error);
+         setAuthStatus(error.message);
+       });
+
+       nowPlayingPollId = window.setInterval(() => {
+         loadCurrentlyPlaying().catch((error) => {
+           console.error(error);
+           setAuthStatus(error.message);
+         });
+       }, 5000);
+     }
+
+     function stopNowPlayingPolling() {
+       if (nowPlayingPollId) {
+         window.clearInterval(nowPlayingPollId);
+         nowPlayingPollId = null;
+       }
+     }
+
+
+     function loadSavedClientId() {
+       const savedClientId = window.localStorage.getItem("spotify_client_id");
+       if (!savedClientId) {
+         return "";
+       }
+
+
+       window.__APP_CONFIG__ = {
+         ...window.__APP_CONFIG__,
+         spotifyClientId: savedClientId,
+       };
+       return savedClientId;
+     }
+
+
+     function saveClientId() {
+       const clientId = clientIdInput?.value.trim() ?? "";
+       if (!clientId) {
+         setAuthStatus("Enter a Spotify Client ID before saving.");
+         return false;
+       }
+
+
+       window.localStorage.setItem("spotify_client_id", clientId);
+       window.__APP_CONFIG__ = {
+         ...window.__APP_CONFIG__,
+         spotifyClientId: clientId,
+       };
+       setAuthStatus("Spotify Client ID saved locally for this browser.");
+       return true;
+     }
+
+
+     function updateAuthUi(profile) {
+       if (profile) {
+         setLoginButtonLabel("Disconnect Spotify");
+         setAuthStatus(`Connected as ${profile.display_name ?? "Spotify user"}.`);
+         window.dispatchEvent(
+           new CustomEvent("spotify-auth-changed", {
+             detail: {
+               connected: true,
+               profile,
+             },
+           })
+         );
+         return;
+       }
+
+
+       if (isSpotifyConnected()) {
+         setLoginButtonLabel("Disconnect Spotify");
+         setAuthStatus("Spotify connected. Ready to fetch your listening data.");
+         window.dispatchEvent(
+           new CustomEvent("spotify-auth-changed", {
+             detail: {
+               connected: true,
+               profile: null,
+             },
+           })
+         );
+         return;
+       }
+
+
+       setLoginButtonLabel("Connect Your Spotify");
+       setAuthStatus("Connect Spotify to load your listening data.");
+       window.dispatchEvent(
+         new CustomEvent("spotify-auth-changed", {
+           detail: {
+             connected: false,
+             profile: null,
+           },
+         })
+       );
+     }
+
+
+     async function initializeSpotifyAuth() {
+       try {
+         await handleSpotifyCallback();
+
+         if (isSpotifyConnected()) {
+           const profile = await fetchCurrentUserProfile();
+           updateAuthUi(profile);
+           startNowPlayingPolling();
+         } else {
+           updateAuthUi(null);
+           resetNowPlayingUi("Connect Spotify to load current song data.");
+         }
+       } catch (error) {
+         console.error(error);
+         setAuthStatus(error.message);
+         setLoginButtonLabel("Connect Your Spotify");
+         resetNowPlayingUi("Current song data could not be loaded.");
+       }
+     }
+
+
+     loginButton?.addEventListener("click", async () => {
+       if (isSpotifyConnected()) {
+         stopNowPlayingPolling();
+         logoutSpotify();
+         updateAuthUi(null);
+         resetNowPlayingUi("Connect Spotify to load current song data.");
+         return;
+       }
+
+
+       setAuthStatus("Redirecting to Spotify...");
+
+
+       try {
+         if (!saveClientId()) {
+           return;
+         }
+
+         await startSpotifyLogin();
+       } catch (error) {
+         console.error(error);
+         setAuthStatus(error.message);
+       }
+     });
+
+
+     saveClientIdButton?.addEventListener("click", () => {
+       saveClientId();
+     });
+
+
+     disconnectButton?.addEventListener("click", () => {
+       logoutSpotify();
+       updateAuthUi(null);
+     });
+
+
+     if (clientIdInput) {
+       clientIdInput.value = loadSavedClientId();
+     }
+
+     initializeSpotifyAuth();
+   </script>
+ </body>
 </html>
