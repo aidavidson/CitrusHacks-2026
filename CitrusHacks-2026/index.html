@@ -26,7 +26,7 @@
 
 
    <main class="page-shell">
-     <section class="hero-card">
+     <section class="hero-card landing-page" id="landing-page">
        <div class="hero-copy">
          <p class="eyebrow">Personal music dashboard</p>
          <h1>Clean up Your Playlists.</h1>
@@ -59,22 +59,38 @@
            </div>
          </div>
          <p class="auth-status" id="auth-status">Connect Spotify to load your listening data.</p>
-
-
-         <div class="stat-strip">
-           <article>
-             <span class="stat-number" id="songs-played-value"></span>
-             <span class="stat-label" id="songs-played-label"></span>
-           </article>
-           <article>
-             <span class="stat-number" id="songs-skipped-value"></span>
-             <span class="stat-label" id="songs-skipped-label"></span>
-           </article>
-         </div>
        </div>
+     </section>
 
+     <section class="dashboard-page is-hidden" id="dashboard-page">
+       <header class="dashboard-topbar">
+         <div class="dashboard-branding">
+           <h2 class="sortify-title">Sortify</h2>
+           <p class="welcome-title">Welcome <span id="welcome-user-name">Spotify user</span></p>
+           <img
+             class="logo dashboard-hero-image"
+             src="book-logo2.png"
+             alt="Sortify bookshelf illustration"
+           />
+           <div class="dashboard-button-row">
+             <button class="primary-button" id="disconnect-button">Disconnect Spotify</button>
+             <button class="secondary-button" id="dashboard-check-skipped-button">Check Skipped</button>
+           </div>
+         </div>
+       </header>
 
-       <aside class="now-playing-card">
+       <section class="stat-strip dashboard-stat-strip">
+         <article>
+           <span class="stat-number" id="songs-played-value"></span>
+           <span class="stat-label" id="songs-played-label"></span>
+         </article>
+         <article>
+           <span class="stat-number" id="songs-skipped-value"></span>
+           <span class="stat-label" id="songs-skipped-label"></span>
+         </article>
+       </section>
+
+       <aside class="now-playing-card dashboard-now-playing">
          <div class="now-playing-cover" id="now-playing-cover"></div>
          <div class="now-playing-meta">
            <p class="mini-label">Now playing</p>
@@ -91,29 +107,30 @@
            </div>
          </div>
        </aside>
-     </section>
+
+       <section class="dashboard-grid">
+         <article class="panel">
+           <div class="panel-heading">
+             <h3>Least Skipped Songs</h3>
+           </div>
+           <div class="track-list" id="liked-songs"></div>
+         </article>
 
 
-     <section class="dashboard-grid">
-       <article class="panel">
-         <div class="panel-heading">
-           <h3>Least Skipped Songs</h3>
-         </div>
-         <div class="track-list" id="liked-songs"></div>
-       </article>
+         <article class="panel accent-panel">
+           <div class="panel-heading">
+             <h3>Most Skipped Songs</h3>
+           </div>
+           <div class="artist-list" id="skipped-songs"></div>
+         </article>
 
 
-       <article class="panel accent-panel">
-         <div class="panel-heading">
-           <h3>Most Skipped Songs</h3>
-         </div>
-         <div class="artist-list" id="skipped-songs"></div>
-       </article>
-
-
-       <article class="panel wide-panel clean-panel">
-         <button class="primary-button clean-button">Clean</button>
-       </article>
+         <article class="panel wide-panel clean-panel">
+           <div class="clean-panel-actions">
+             <button class="primary-button clean-button">Clean</button>
+           </div>
+         </article>
+       </section>
      </section>
    </main>
 
@@ -132,6 +149,7 @@
 
 
      const loginButton = document.getElementById("login-button");
+     const disconnectButton = document.getElementById("disconnect-button");
      const authStatus = document.getElementById("auth-status");
      const clientIdInput = document.getElementById("spotify-client-id");
      const saveClientIdButton = document.getElementById("save-client-id-button");
@@ -327,6 +345,14 @@
        if (profile) {
          setLoginButtonLabel("Disconnect Spotify");
          setAuthStatus(`Connected as ${profile.display_name ?? "Spotify user"}.`);
+         window.dispatchEvent(
+           new CustomEvent("spotify-auth-changed", {
+             detail: {
+               connected: true,
+               profile,
+             },
+           })
+         );
          return;
        }
 
@@ -334,12 +360,28 @@
        if (isSpotifyConnected()) {
          setLoginButtonLabel("Disconnect Spotify");
          setAuthStatus("Spotify connected. Ready to fetch your listening data.");
+         window.dispatchEvent(
+           new CustomEvent("spotify-auth-changed", {
+             detail: {
+               connected: true,
+               profile: null,
+             },
+           })
+         );
          return;
        }
 
 
        setLoginButtonLabel("Connect Your Spotify");
        setAuthStatus("Connect Spotify to load your listening data.");
+       window.dispatchEvent(
+         new CustomEvent("spotify-auth-changed", {
+           detail: {
+             connected: false,
+             profile: null,
+           },
+         })
+       );
      }
 
 
@@ -392,6 +434,12 @@
 
      saveClientIdButton?.addEventListener("click", () => {
        saveClientId();
+     });
+
+
+     disconnectButton?.addEventListener("click", () => {
+       logoutSpotify();
+       updateAuthUi(null);
      });
 
 

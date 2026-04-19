@@ -19,12 +19,16 @@ const connectedPlaceholders = {
 };
 
 const formatSkips = (value) => `${value} ${value === 1 ? "skip" : "skips"}`;
+const landingPage = document.getElementById("landing-page");
+const dashboardPage = document.getElementById("dashboard-page");
 const likedSongsContainer = document.getElementById("liked-songs");
 const skippedSongsContainer = document.getElementById("skipped-songs");
 const connectSpotifyButton =
   document.getElementById("connect-spotify-button") || document.getElementById("login-button");
 const checkSkippedButton = document.getElementById("check-skipped-button");
+const dashboardCheckSkippedButton = document.getElementById("dashboard-check-skipped-button");
 const cleanButton = document.querySelector(".clean-button");
+const welcomeUserName = document.getElementById("welcome-user-name");
 const songsPlayedValue = document.getElementById("songs-played-value");
 const songsPlayedLabel = document.getElementById("songs-played-label");
 const songsSkippedValue = document.getElementById("songs-skipped-value");
@@ -38,6 +42,12 @@ const nowPlayingProgress = document.getElementById("now-playing-progress");
 const nowPlayingMetaLabel = document.querySelector(".mini-label");
 let isSpotifyConnected = false;
 let hasCheckedSkipped = false;
+
+const setPageState = (connected, accountName = "Spotify user") => {
+  landingPage.classList.toggle("is-hidden", connected);
+  dashboardPage.classList.toggle("is-hidden", !connected);
+  welcomeUserName.textContent = accountName;
+};
 
 const updateCleanButtonState = () => {
   cleanButton.disabled = !(isSpotifyConnected && hasCheckedSkipped);
@@ -77,6 +87,9 @@ const renderMostSkippedSongs = (songs) => {
 };
 
 const renderDisconnectedState = () => {
+  isSpotifyConnected = false;
+  hasCheckedSkipped = false;
+  setPageState(false);
   songsPlayedValue.textContent = "--";
   songsPlayedLabel.textContent = "Connect to load songs played";
   songsSkippedValue.textContent = "--";
@@ -93,9 +106,10 @@ const renderDisconnectedState = () => {
   `;
 };
 
-const renderConnectedState = () => {
+const renderConnectedState = (accountName = "Spotify user") => {
   isSpotifyConnected = true;
   hasCheckedSkipped = false;
+  setPageState(true, accountName);
   songsPlayedValue.textContent = connectedPlaceholders.listeningSummary.songsPlayed;
   songsPlayedLabel.textContent = "Songs Played";
   songsSkippedValue.textContent = connectedPlaceholders.listeningSummary.songsSkipped;
@@ -140,7 +154,19 @@ cleanButton.addEventListener("click", function() {
 });
 
 checkSkippedButton.addEventListener("click", renderSkippedSongs);
-connectSpotifyButton.addEventListener("click", renderConnectedState);
+dashboardCheckSkippedButton?.addEventListener("click", renderSkippedSongs);
+
+window.addEventListener("spotify-auth-changed", (event) => {
+  const { connected, profile } = event.detail;
+  if (connected) {
+    renderConnectedState(profile?.display_name ?? "Spotify user");
+    return;
+  }
+
+  renderDisconnectedState();
+  renderLockedState();
+  updateCleanButtonState();
+});
 
 renderDisconnectedState();
 renderLockedState();

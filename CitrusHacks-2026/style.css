@@ -147,6 +147,10 @@ button {
   padding: 2rem 0 3rem;
 }
 
+.is-hidden {
+  display: none !important;
+}
+
 .hero-card,
 .panel {
   backdrop-filter: blur(18px);
@@ -157,10 +161,14 @@ button {
 
 .hero-card {
   display: grid;
-  grid-template-columns: 1.3fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
   padding: 1.5rem;
   border-radius: 28px;
+}
+
+.landing-page {
+  min-height: 560px;
 }
 
 .eyebrow,
@@ -246,6 +254,53 @@ h1 {
   min-height: 1.5rem;
 }
 
+.dashboard-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-topbar {
+  display: block;
+}
+
+.dashboard-branding {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.sortify-title {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.95;
+}
+
+.logo {
+  width: 260px;
+  height: auto;
+}
+
+.dashboard-hero-image {
+  width: min(100%, 260px);
+  display: block;
+  border: 4px solid #d61f3f;
+  border-radius: 24px;
+  background: rgba(10, 13, 55, 0.4);
+}
+
+.welcome-title {
+  margin: 0;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+  line-height: 1.1;
+}
+
+.dashboard-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
 .primary-button,
 .secondary-button {
   padding: 0.9rem 1.2rem;
@@ -280,6 +335,10 @@ h1 {
   margin-top: 1.75rem;
 }
 
+.dashboard-stat-strip {
+  margin-top: 0;
+}
+
 .stat-strip article {
   padding: 1rem;
   border-radius: 20px;
@@ -309,8 +368,13 @@ h1 {
   border: 1px solid rgba(255, 90, 118, 0.18);
 }
 
+.dashboard-now-playing {
+  min-height: 540px;
+  align-content: start;
+}
+
 .now-playing-cover {
-  aspect-ratio: 1;
+  aspect-ratio: 1.18;
   border-radius: 18px;
   background-position: center;
   background-size: cover;
@@ -319,12 +383,13 @@ h1 {
 
 .now-playing-meta h2 {
   margin: 0.15rem 0;
-  font-size: 1.8rem;
+  font-size: 1.3rem;
 }
 
 .now-playing-meta p {
   margin: 0;
   color: #f0d8de;
+  font-size: 0.95rem;
 }
 
 .progress-block {
@@ -353,7 +418,7 @@ h1 {
   width: 100%;
   margin-top: 0.5rem;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
 }
 
 #now-playing-duration {
@@ -507,6 +572,13 @@ h1 {
   display: grid;
   place-items: center;
   min-height: 140px;
+}
+
+.clean-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .clean-button {
