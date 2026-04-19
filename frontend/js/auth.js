@@ -200,16 +200,24 @@ export async function spotifyFetch(path, init = {}) {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+  console.log("[Sortify] spotifyFetch", path, response.status, response.headers.get("Retry-After"));
 
   if (response.status === 401) {
     const refreshedToken = await refreshAccessToken();
-    return fetch(`${API_URL}${path}`, {
+    const retryResponse = await fetch(`${API_URL}${path}`, {
       ...init,
       headers: {
         ...init.headers,
         Authorization: `Bearer ${refreshedToken.accessToken}`,
       },
     });
+    console.log(
+      "[Sortify] spotifyFetch retry",
+      path,
+      retryResponse.status,
+      retryResponse.headers.get("Retry-After")
+    );
+    return retryResponse;
   }
 
   return response;
