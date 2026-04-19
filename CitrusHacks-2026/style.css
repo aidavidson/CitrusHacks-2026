@@ -32,6 +32,7 @@ body {
   inset: 0;
   z-index: -3;
   overflow: hidden;
+  isolation: isolate;
   background:
     radial-gradient(circle at 20% 20%, rgba(65, 105, 225, 0.2), transparent 24%),
     radial-gradient(circle at 80% 30%, rgba(194, 30, 86, 0.18), transparent 22%),
