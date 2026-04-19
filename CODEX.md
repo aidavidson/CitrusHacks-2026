@@ -1,23 +1,6 @@
 # 🎧 Sortify — Project Codex
 
-> A Spotify listening tracker that estimates whether a song play actually counted, validated empirically against Spotify & Airbuds history.
-
----
-
-## 🧠 What We're Building
-
-A web app that:
-- Logs into Spotify via OAuth
-- Tracks your current song + playback progress in real time
-- Estimates whether each listen "counted" (based on the 30-second stream rule)
-- Compares predictions against your Spotify recently played history
-- Shows a personal dashboard: skips, finishes, accuracy score
-
----
-
-## 💡 The Problem
-
-Sometimes songs don't show up in Spotify history, Airbuds, or Wrapped even when it feels like you listened to them. Users have no visibility into why. We're building a tracker that makes that process more transparent.
+Sortify is a Spotify listening tracker focused on playlist cleanup, not stream-count estimation. It watches how much of each song a user actually plays, marks low-engagement tracks as skips, and builds a local history of skipped versus completed songs so users can decide what belongs in their playlists.
 
 ---
 
@@ -53,55 +36,22 @@ user-read-recently-played
 
 ## 📐 Our "Sortify" Rule
 
-Spotify says a song stream is counted after at least **30 seconds** of playback.
-
-Our app does **not** have access to Spotify's internal stream-counting system, so we estimate whether a listen likely qualified under that rule.
-
-| Progress Reached | Our Label |
-|---|---|
-| < 30 seconds | ❌ Likely did NOT qualify |
-| ≥ 30 seconds | ✅ Likely qualified |
-| ≥ 90% of track | 🔥 Strong completion signal |
-
-We then compare our prediction against whether the track later appears in `/me/player/recently-played`. That gives us an empirical accuracy score for our model, not a direct measurement of Spotify's internal counting.
+Sortify uses a proportional playback threshold to classify songs as skipped or completed. Instead of asking whether a song technically counted as a stream, the app looks at how much of the track the user actually played before moving on. That makes the data more useful for playlist cleanup, because the goal is to measure engagement rather than replicate Spotify's private metrics.
 
 ---
 
 ## 📊 The Experiment
 
-We're testing the hypothesis:
-> "If a song reaches 30 seconds of playback, how often does it later appear in Spotify recently played history?"
-
-**For each listen, we store:**
-- Track ID + name + artist
-- Track duration
-- Max `progress_ms` reached
-- Whether it crossed 30 seconds
-- Whether the user skipped
-- Timestamp
-
-**Later we check:**
-- Did it appear in recently played? (yes/no)
-- Did our prediction match that visible outcome?
-
-**Output:**
-- % accuracy of our 30s model
-- "Songs over 30s appeared in your history X% of the time"
-- Personal listening patterns
-
-**Accuracy definition:**
-- prediction = whether our model thinks a listen likely qualified
-- outcome = whether the track later appeared in Spotify recently played
-- accuracy = the percentage of listens where prediction matched outcome
+We're testing whether snapshot-based polling can reliably separate low-engagement songs from songs users actually finish. For each listen, the app stores the track ID, name, duration, playback progress, classification result, and timestamp. It also records threshold-reached events and compares session output against Spotify recently played history as a sanity check on what the user actually listened to.
 
 ---
 
 ## 🖥️ App Pages
 
 1. **Login** — Spotify OAuth button
-2. **Now Playing** — Current song card, live progress bar, countdown to 30s
-3. **Session History** — List of today's listens with prediction labels
-4. **Stats Dashboard** — Accuracy score, skip rate, finish rate, and fun insights
+2. **Now Playing** — Current song card, live progress bar, and threshold notice
+3. **Session History** — List of listens with skip/completed labels
+4. **Stats Dashboard** — Skip rate, finish rate, and cleanup insights
 
 If time gets tight, collapse these into one page with sections instead of keeping separate routes.
 
@@ -123,7 +73,7 @@ If time gets tight, collapse these into one page with sections instead of keepin
 
 ### Person 3 — Product, Demo & Docs
 - Own the README and presentation
-- Write the Sortify prediction logic
+- Write the Sortify skip-classification logic
 - Run the empirical test during the hackathon (listen to songs, check results)
 - Build the stats/accuracy dashboard
 - Prepare the demo script
@@ -136,7 +86,7 @@ If time gets tight, collapse these into one page with sections instead of keepin
 |---|---|
 | Hour 0–2 | Spotify app registered, OAuth login working, repo set up |
 | Hour 2–5 | Now Playing page polling current track + showing progress |
-| Hour 5–8 | Session logging to localStorage, 30s threshold labeling |
+| Hour 5–8 | Session logging to localStorage, threshold labeling |
 | Hour 8–12 | Recently played fetch, compare predictions vs. history |
 | Hour 12–16 | Stats dashboard + accuracy score |
 | Hour 16–20 | UI polish, mobile-friendly layout, README screenshots |
@@ -147,9 +97,9 @@ If time gets tight, collapse these into one page with sections instead of keepin
 
 ## ⚠️ Known Limitations (be honest in the demo)
 
-- Spotify's public API **does not expose an official "this stream counted" flag**. Our predictions are estimates based on Spotify's published 30-second rule.
-- `recently-played` is listening history, not an internal stream-accounting ledger
-- Airbuds is used only as an **optional manual visual check** in the demo, not programmatic integration
+- Polling is snapshot-based, so there is timing approximation around track changes
+- `recently-played` is a useful comparison signal, but not the source of the skip classification itself
+- Airbuds is used only as an optional manual visual check in the demo, not programmatic integration
 - Some edge cases (Spotify Jam, offline mode) may behave differently
 
 ## 🛟 Fallback MVP
@@ -158,8 +108,8 @@ If real-time polling is flaky:
 
 - poll every 5 seconds
 - log track changes and max observed `progress_ms`
-- treat "crossed 30 seconds before track changed" as the core experiment
-- demo the estimator cleanly instead of chasing edge cases
+- treat threshold crossing plus final classification as the core experiment
+- demo the playlist-cleanup insight cleanly instead of chasing edge cases
 
 ---
 

@@ -1,129 +1,48 @@
-# Sortify - Description
-
-A website using spotify API to document listens from different songs and tracking which songs are listened to the most
-
 # Sortify
 
-A beginner-friendly Citrus Hacks 2026 web project that estimates whether a Spotify listen likely qualified under Spotify's 30-second stream rule, then compares that estimate against visible listening history.
+Find the songs you skip. Clean the playlists you don't.
 
-## Project Idea
+Sortify is a Spotify listening tracker that helps users identify songs they skip or barely engage with so they can make smarter decisions about which songs to remove from their playlists. Most people have bloated playlists full of songs they never actually finish. Sortify makes that pattern visible.
 
-Sometimes a song feels like it should show up in Spotify history, Airbuds, or Wrapped, but it does not. This project tracks playback progress, applies a simple prediction rule, and compares that prediction against Spotify's visible listening history.
+## The Problem
 
-## MVP
+Spotify playlists tend to grow for years without much cleanup. As users keep adding songs, those playlists start filling up with tracks they no longer enjoy or rarely finish. Spotify Wrapped and other native tools focus on favorites, but they do not clearly show which songs are consistently skipped. That makes it hard to identify low-engagement tracks that are just taking up space.
 
-- Spotify login
-- Live "Now Playing" tracker
-- 30-second threshold indicator
-- Session history saved locally
-- Comparison against Spotify recently played
-- Simple dashboard with skip rate, finish rate, and model accuracy
+## The Solution
 
-## Cold, Hard Scope
+Sortify tracks playback in real time, detects when a song is skipped based on how much of it was played, and builds a personal history of skip versus complete events. Instead of only showing what users liked, it helps reveal the songs they keep abandoning. Users can then use that history to decide which tracks are worth removing from their playlists.
 
-What we are building:
+## Features
 
-- A website, not a mobile app
-- A tracker and estimator, not a perfect verifier
-- A hackathon MVP that uses Spotify's public API
+- Spotify OAuth login
+- Real-time playback polling (every ~5 seconds)
+- Snapshot-based skip detection
+- Threshold classification: songs played to less than 55% are marked as skipped; 55% or more are marked as completed
+- Session history saved to localStorage
+- Recently played comparison via Spotify API
+- Planned: most-skipped song ranking
+- Planned: least-engaged track leaderboard
+- Planned: playlist cleanup recommendations
 
-What we are not building:
+## How It Works
 
-- A perfect clone of Spotify Wrapped
-- A direct Airbuds integration
-- A backend-heavy analytics platform
-- A system that proves Spotify's private internal counting logic
+The app polls Spotify every 5 seconds to get the current track and playback position. When the track changes, it classifies the previous track using `progress_ms / duration_ms`. If the result is below 55%, the track is logged as skipped; if it is 55% or above, it is logged as completed. Results are saved locally in the browser and compared against Spotify's recently played history.
 
-## Recommended Stack
+## Screenshots
 
-- Frontend: HTML, CSS, JavaScript
-- Auth: Spotify OAuth with PKCE
-- Data: Spotify Web API
-- Storage: `localStorage`
-- Optional later: Firebase or Supabase if you want persistence
+Placeholder: [Screenshot: App UI — Now Playing view]
 
-## How the App Works
+Placeholder: [Screenshot: Debug panel — session classification output]
 
-1. The user signs in with Spotify.
-2. The app checks the current track and playback progress.
-3. The app stores listen sessions locally.
-4. The app estimates whether a listen likely qualified under Spotify's 30-second rule.
-5. The app compares those predictions with Spotify recently played results.
-6. The dashboard shows listening patterns and model accuracy.
+## Tech Stack
 
-## Accuracy Definition
+- HTML
+- CSS
+- JavaScript
+- Spotify Web API
+- OAuth 2.0 with PKCE
+- localStorage
 
-For this project:
+## Team
 
-- prediction = whether our model thinks a listen likely qualified
-- outcome = whether that track later appeared in Spotify recently played
-- accuracy = the percentage of listens where our prediction matched that visible outcome
-
-This is an empirical score for our model, not a direct measurement of Spotify's internal stream-counting system.
-
-## Repo Structure
-
-Current scaffold:
-
-```text
-.
-├── .env.example
-├── CODEX.md
-├── README.md
-├── backend/
-│   └── README.md
-├── docs/
-│   ├── build-plan.md
-│   ├── demo-checklist.md
-│   └── team-roles.md
-└── frontend/
-    ├── assets/
-    ├── css/
-    ├── index.html
-    ├── js/
-    └── pages/
-```
-
-Fastest hackathon fallback:
-
-```text
-frontend/
-├── index.html
-├── css/styles.css
-└── js/
-    ├── app.js
-    ├── auth.js
-    └── storage.js
-```
-
-If time gets tight, collapse the prototype into one main page with sections for Now Playing, History, and Stats.
-
-## Team Split
-
-- Person 1: Frontend and styling
-- Person 2: Spotify auth and playback polling
-- Person 3: prediction logic, dashboard, README, and demo
-
-Detailed role instructions live in [docs/team-roles.md](/Users/setup/Documents/CitrusHacks-2026/docs/team-roles.md).
-
-## Fast Start
-
-1. Create a Spotify developer app.
-2. Put your redirect URI and client ID into `.env.example`, then copy those values into your local setup.
-3. Build the login flow first.
-4. Poll every 5 seconds, log track changes and max observed progress, and treat "crossed 30s before track changed" as the core experiment if live tracking gets flaky.
-5. Get one page working end-to-end before adding polish.
-6. Take screenshots as you go for the final demo and README.
-
-## Important Honesty Note
-
-Spotify's public API does not expose an official "this play counted" flag. This project should present itself as an estimator backed by a real experiment, not as a perfect verifier of Spotify's private systems.
-
-Airbuds should be treated as an optional manual visual comparison in the demo, not as a required integration.
-
-## Before Submission
-
-- Add team names
-- Add screenshots
-- Add a short demo link if you record one
-- Update the README with what actually got finished
+[Team member names]
