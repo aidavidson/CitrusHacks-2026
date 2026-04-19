@@ -143,6 +143,7 @@
        handleSpotifyCallback,
        isSpotifyConnected,
        logoutSpotify,
+       spotifyFetch,
        startSpotifyLogin,
      } from "../frontend/js/auth.js";
 
@@ -152,6 +153,13 @@
      const authStatus = document.getElementById("auth-status");
      const clientIdInput = document.getElementById("spotify-client-id");
      const saveClientIdButton = document.getElementById("save-client-id-button");
+     const nowPlayingTitle = document.getElementById("now-playing-title");
+     const nowPlayingArtist = document.getElementById("now-playing-artist");
+     const nowPlayingCover = document.getElementById("now-playing-cover");
+     const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+     const nowPlayingDuration = document.getElementById("now-playing-duration");
+     const nowPlayingProgress = document.getElementById("now-playing-progress");
+     let nowPlayingPollId = null;
 
 
      function setAuthStatus(message) {
@@ -164,6 +172,138 @@
      function setLoginButtonLabel(message) {
        if (loginButton) {
          loginButton.textContent = message;
+       }
+     }
+
+     function formatMs(ms) {
+       if (!Number.isFinite(ms) || ms < 0) {
+         return "--:--";
+       }
+
+       const totalSeconds = Math.floor(ms / 1000);
+       const minutes = Math.floor(totalSeconds / 60);
+       const seconds = totalSeconds % 60;
+       return `${minutes}:${String(seconds).padStart(2, "0")}`;
+     }
+
+     function resetNowPlayingUi(message = "Nothing is playing right now.") {
+       if (nowPlayingTitle) {
+         nowPlayingTitle.textContent = "No active track";
+       }
+
+       if (nowPlayingArtist) {
+         nowPlayingArtist.textContent = message;
+       }
+
+       if (nowPlayingCurrentTime) {
+         nowPlayingCurrentTime.textContent = "--:--";
+       }
+
+       if (nowPlayingDuration) {
+         nowPlayingDuration.textContent = "--:--";
+       }
+
+       if (nowPlayingProgress) {
+         nowPlayingProgress.style.width = "0%";
+       }
+
+       if (nowPlayingCover) {
+         nowPlayingCover.style.backgroundImage = `
+           linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+         `;
+       }
+     }
+
+     function renderNowPlaying(trackData) {
+       const item = trackData?.item;
+       if (!item) {
+         resetNowPlayingUi();
+         return;
+       }
+
+       const artistName = item.artists?.[0]?.name ?? "Unknown artist";
+       const coverUrl = item.album?.images?.[0]?.url ?? "";
+       const progressMs = trackData.progress_ms ?? 0;
+       const durationMs = item.duration_ms ?? 0;
+       const percentComplete = durationMs > 0 ? (progressMs / durationMs) * 100 : 0;
+
+       if (nowPlayingTitle) {
+         nowPlayingTitle.textContent = item.name ?? "Unknown track";
+       }
+
+       if (nowPlayingArtist) {
+         nowPlayingArtist.textContent = artistName;
+       }
+
+       if (nowPlayingCurrentTime) {
+         nowPlayingCurrentTime.textContent = formatMs(progressMs);
+       }
+
+       if (nowPlayingDuration) {
+         nowPlayingDuration.textContent = formatMs(durationMs);
+       }
+
+       if (nowPlayingProgress) {
+         nowPlayingProgress.style.width = `${Math.min(Math.max(percentComplete, 0), 100)}%`;
+       }
+
+       if (nowPlayingCover) {
+         nowPlayingCover.style.backgroundImage = coverUrl
+           ? `
+             linear-gradient(135deg, rgba(61, 99, 255, 0.18), rgba(255, 90, 118, 0.4)),
+             url("${coverUrl}")
+           `
+           : `
+             linear-gradient(135deg, rgba(61, 99, 255, 0.22), rgba(255, 90, 118, 0.4))
+           `;
+       }
+     }
+
+     async function loadCurrentlyPlaying() {
+       if (!isSpotifyConnected()) {
+         resetNowPlayingUi("Connect Spotify to load current song data.");
+         return null;
+       }
+
+       const response = await spotifyFetch("/me/player/currently-playing");
+
+       if (response.status === 204) {
+         resetNowPlayingUi();
+         return null;
+       }
+
+       if (!response.ok) {
+         throw new Error("Could not load current Spotify playback.");
+       }
+
+       const trackData = await response.json();
+       console.log("Spotify currently playing JSON:", trackData);
+       renderNowPlaying(trackData);
+       return trackData;
+     }
+
+     function startNowPlayingPolling() {
+       if (nowPlayingPollId) {
+         window.clearInterval(nowPlayingPollId);
+       }
+
+       loadCurrentlyPlaying().catch((error) => {
+         console.error(error);
+         setAuthStatus(error.message);
+       });
+
+       nowPlayingPollId = window.setInterval(() => {
+         loadCurrentlyPlaying().catch((error) => {
+           console.error(error);
+           setAuthStatus(error.message);
+         });
+       }, 5000);
+     }
+
+     function stopNowPlayingPolling() {
+       if (nowPlayingPollId) {
+         window.clearInterval(nowPlayingPollId);
+         nowPlayingPollId = null;
        }
      }
 
@@ -252,21 +392,26 @@
          if (isSpotifyConnected()) {
            const profile = await fetchCurrentUserProfile();
            updateAuthUi(profile);
+           startNowPlayingPolling();
          } else {
            updateAuthUi(null);
+           resetNowPlayingUi("Connect Spotify to load current song data.");
          }
        } catch (error) {
          console.error(error);
          setAuthStatus(error.message);
          setLoginButtonLabel("Connect Your Spotify");
+         resetNowPlayingUi("Current song data could not be loaded.");
        }
      }
 
 
      loginButton?.addEventListener("click", async () => {
        if (isSpotifyConnected()) {
+         stopNowPlayingPolling();
          logoutSpotify();
          updateAuthUi(null);
+         resetNowPlayingUi("Connect Spotify to load current song data.");
          return;
        }
 
