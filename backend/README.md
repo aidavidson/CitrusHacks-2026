@@ -1,6 +1,6 @@
 # Backend Notes
 
-This project does not need a real backend for the MVP.
+Sortify is a frontend-first Spotify listening tracker that classifies songs as skipped or completed based on playback progress, then stores those results locally so users can spot low-engagement tracks and clean up their playlists.
 
 Use the frontend plus Spotify's public API first. Only add a backend if you later need:
 

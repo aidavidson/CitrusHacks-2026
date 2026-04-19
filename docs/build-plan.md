@@ -2,9 +2,7 @@
 
 ## Main Hypothesis
 
-If a song reaches at least 30 seconds of playback, it is more likely to appear in Spotify recently played history than a song skipped earlier.
-
-This is a model-validation experiment, not a direct measurement of Spotify's internal stream-counting system.
+Sortify should be able to identify low-engagement playlist tracks by comparing how much of a song was played before the user switched away. The goal is not to estimate whether a stream "counted," but to surface which songs users consistently skip and which ones they actually finish.
 
 ## MVP Features
 
@@ -13,7 +11,7 @@ This is a model-validation experiment, not a direct measurement of Spotify's int
 - Spotify sign-in
 - Current track display
 - Live playback progress
-- A visible 30-second marker
+- A visible skip/completed threshold marker
 - Stored session history
 - Recently played comparison
 
@@ -51,7 +49,7 @@ This is a model-validation experiment, not a direct measurement of Spotify's int
 ### Hours 6-10
 
 - save listens locally
-- add 30-second prediction logic
+- add threshold-based skip logic
 - render history page
 
 ### Hours 10-16

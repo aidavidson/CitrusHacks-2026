@@ -1,6 +1,6 @@
 # Team Roles
 
-This split is designed for three first-time hackathon teammates with limited backend experience. The goal is to reduce confusion and keep everyone shipping visible progress.
+This split is designed for a three-person team building Sortify, a Spotify listening tracker that highlights skipped and low-engagement songs so users can clean up their playlists. The goal is to reduce confusion, keep everyone focused on one clear product, and make sure the team ships visible progress quickly.
 
 ## Person 1: Frontend and Design
 
@@ -57,7 +57,7 @@ Own:
 
 Responsibilities:
 
-- Define what counts as skip, partial, and likely counted
+- Define what counts as skip, partial, and completed
 - Save and compare sessions
 - Compute stats for the dashboard
 - Write the story for the judges

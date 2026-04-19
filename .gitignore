@@ -22,3 +22,6 @@ build/
 *.swp
 *.swo
 *~
+
+.stats2
+.stats3
