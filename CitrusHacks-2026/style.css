@@ -32,6 +32,7 @@ body {
   inset: 0;
   z-index: -3;
   overflow: hidden;
+  isolation: isolate;
   background:
     radial-gradient(circle at 20% 20%, rgba(65, 105, 225, 0.2), transparent 24%),
     radial-gradient(circle at 80% 30%, rgba(194, 30, 86, 0.18), transparent 22%),
@@ -265,6 +266,13 @@ h1 {
   transform: translateY(-2px);
 }
 
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 .stat-strip {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -332,22 +340,25 @@ h1 {
 
 .progress-line span {
   display: block;
-  /*this width is decided based on location in the song
-  must be modified so when the user is playing song it changes
-  with the user*/
-  width: var(--percent-completion);
-
+  width: 0%;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ff6b85, #4169e1);
+  transition: width 280ms ease;
 }
 
 .progress-time {
   display: flex;
   justify-content: space-between;
+  width: 100%;
   margin-top: 0.5rem;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+#now-playing-duration {
+  margin-left: auto;
+  text-align: right;
 }
 
 .dashboard-grid {
@@ -391,6 +402,19 @@ h1 {
 .artist-list {
   display: grid;
   gap: 0.8rem;
+}
+
+.empty-state {
+  padding: 1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(112, 137, 255, 0.15);
+  color: var(--muted);
+  line-height: 1.5;
+  min-height: 88px;
+  display: grid;
+  place-items: center;
+  text-align: center;
 }
 
 .track-row,
