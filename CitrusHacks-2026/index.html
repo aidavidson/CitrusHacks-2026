@@ -242,8 +242,42 @@
 	       }
 	     }
 
-	     function classifyTrack(progress_ms, duration_ms) {
-	       if (progress_ms == null || !Number.isFinite(duration_ms) || duration_ms <= 0) {
+	     function getClassifiableProgressMs(trackSnapshot) {
+	       const observedProgress = [
+	         trackSnapshot?.progress_ms,
+	         trackSnapshot?.maxProgressMs,
+	       ].filter(Number.isFinite);
+
+	       if (observedProgress.length === 0) {
+	         return null;
+	       }
+
+	       return Math.max(...observedProgress);
+	     }
+
+	     function hasTrackReachedThreshold(trackSnapshot) {
+	       if (trackSnapshot?.thresholdReached) {
+	         return true;
+	       }
+
+	       const progressMs = getClassifiableProgressMs(trackSnapshot);
+	       if (!Number.isFinite(progressMs) || !Number.isFinite(trackSnapshot?.duration_ms) || trackSnapshot.duration_ms <= 0) {
+	         return false;
+	       }
+
+	       return progressMs / trackSnapshot.duration_ms >= SKIP_THRESHOLD;
+	     }
+
+	     function classifyTrack(progress_ms, duration_ms, thresholdReached = false) {
+	       if (!Number.isFinite(duration_ms) || duration_ms <= 0) {
+	         return "unknown";
+	       }
+
+	       if (thresholdReached) {
+	         return "completed";
+	       }
+
+	       if (progress_ms == null) {
 	         return "unknown";
 	       }
 
@@ -345,27 +379,36 @@
 	       console.log(`[Sortify] NO MATCH - "${sessionEntry.trackName}" not found in recently played`);
 	     }
 
-	     async function recordClassification(trackSnapshot) {
+	     async function recordClassification(trackSnapshot, classificationReason = "track_changed") {
 	       if (!trackSnapshot?.id) {
 	         return;
 	       }
 
-	       const percentPlayed = trackSnapshot.duration_ms > 0 && Number.isFinite(trackSnapshot.progress_ms)
-	         ? trackSnapshot.progress_ms / trackSnapshot.duration_ms
+	       const progressMs = getClassifiableProgressMs(trackSnapshot);
+	       const thresholdReached = hasTrackReachedThreshold(trackSnapshot);
+	       const percentPlayed = trackSnapshot.duration_ms > 0 && Number.isFinite(progressMs)
+	         ? progressMs / trackSnapshot.duration_ms
 	         : null;
-	       const classification = classifyTrack(trackSnapshot.progress_ms, trackSnapshot.duration_ms);
+	       const classification = classifyTrack(progressMs, trackSnapshot.duration_ms, thresholdReached);
 	       const sessionEntry = {
 	         trackId: trackSnapshot.id,
 	         trackName: trackSnapshot.name,
+	         progressMs,
 	         percentPlayed,
+	         threshold: SKIP_THRESHOLD,
+	         thresholdReached,
 	         classification,
+	         classificationReason,
 	         timestamp: new Date().toISOString(),
 	       };
 
 	       console.log("[Sortify] Classification", {
 	         name: sessionEntry.trackName,
+	         progressMs: sessionEntry.progressMs,
 	         percentPlayed: sessionEntry.percentPlayed,
+	         thresholdReached: sessionEntry.thresholdReached,
 	         classification: sessionEntry.classification,
+	         classificationReason: sessionEntry.classificationReason,
 	         timestamp: sessionEntry.timestamp,
 	       });
 
@@ -401,9 +444,24 @@
 	       lastThresholdEventTrackId = trackSnapshot.id;
 	     }
 
+	     function mergeTrackSnapshots(previousSnapshot, currentSnapshot) {
+	       const previousProgressMs = getClassifiableProgressMs(previousSnapshot);
+	       const currentProgressMs = getClassifiableProgressMs(currentSnapshot);
+	       const maxProgressMs = Math.max(
+	         Number.isFinite(previousProgressMs) ? previousProgressMs : 0,
+	         Number.isFinite(currentProgressMs) ? currentProgressMs : 0
+	       );
+
+	       return {
+	         ...currentSnapshot,
+	         maxProgressMs,
+	         thresholdReached: hasTrackReachedThreshold(previousSnapshot) || hasTrackReachedThreshold(currentSnapshot),
+	       };
+	     }
+
 	     async function maybeClassifyPreviousTrack(currentTrack) {
 	       // HOOK: future skip counter and ranking logic goes here
-	       // Polling every 15 seconds is snapshot-based, so very short tracks and rapid skips can be missed or misclassified.
+	       // Polling is snapshot-based, so very short tracks and rapid skips can be missed or misclassified.
 	       if (!currentTrack?.id) {
 	         return;
 	       }
@@ -414,15 +472,14 @@
 	       }
 
 	       if (previousTrack.id === currentTrack.id) {
-	         previousTrack = {
-	           ...previousTrack,
-	           progress_ms: currentTrack.progress_ms,
-	           is_playing: currentTrack.is_playing,
-	         };
+	         previousTrack = mergeTrackSnapshots(previousTrack, currentTrack);
 	         return;
 	       }
 
-	       await recordClassification(previousTrack);
+	       const switchReason = hasTrackReachedThreshold(previousTrack)
+	         ? "switched_after_threshold"
+	         : "switched_before_threshold";
+	       await recordClassification(previousTrack, switchReason);
 	       previousTrack = currentTrack;
 	     }
 
@@ -431,7 +488,7 @@
 	         return;
 	       }
 
-	       await recordClassification(previousTrack);
+	       await recordClassification(previousTrack, "playback_stopped");
 	       previousTrack = null;
 	     }
 
@@ -593,6 +650,10 @@
 	         name: trackData?.item?.name ?? "Unknown track",
 	         duration_ms: trackData?.item?.duration_ms ?? 0,
 	         progress_ms: trackData?.progress_ms ?? 0,
+	         maxProgressMs: trackData?.progress_ms ?? 0,
+	         thresholdReached:
+	           (trackData?.item?.duration_ms ?? 0) > 0 &&
+	           (trackData?.progress_ms ?? 0) / (trackData?.item?.duration_ms ?? 1) >= SKIP_THRESHOLD,
 	         is_playing: trackData?.is_playing ?? false,
 	       };
 	       maybeRecordThresholdEvent(currentTrack);
