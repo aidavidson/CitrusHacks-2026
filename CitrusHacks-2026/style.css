@@ -256,6 +256,8 @@ h1 {
 
 .dashboard-page {
   display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
@@ -362,6 +364,7 @@ h1 {
 
 .now-playing-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   padding: 1.2rem;
   border-radius: 24px;
@@ -513,6 +516,13 @@ h1 {
 .track-title,
 .artist-name {
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.now-playing-meta,
+.artist-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .track-subtitle,
@@ -527,7 +537,7 @@ h1 {
 }
 
 .artist-row {
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
 }
 
 .artist-score {

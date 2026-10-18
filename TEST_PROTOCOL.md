@@ -1,5 +1,11 @@
 # TEST_PROTOCOL
 
+> Archived hackathon experiment. The current app uses a 55% threshold, five-second
+> active polling, and SQLite history through the backend. Do not change production
+> constants to follow this older 20%/8-second protocol. Run `npm test` and
+> `npm run test:browser` as documented in the root README; live Spotify validation
+> still needs a configured app and real account.
+
 ## Purpose
 
 This procedure is used to validate whether an 8-second polling interval is reliable enough for the final demo. The previous interval was 15 seconds. The goal is to confirm that threshold crossings can be detected consistently, identify where 8-second polling still fails, and select 2-3 strong live demo scenarios.

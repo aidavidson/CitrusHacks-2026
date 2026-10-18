@@ -1,14 +1,15 @@
+import { getSortifySessions } from "../frontend/js/listens.js";
+
 const connectedPlaceholders = {
   nowPlaying: {
     title: "Current song will appear here",
     artist: "Connected Spotify data pending",
     currentTime: "--:--",
     duration: "--:--",
-    percentCompletion: 0
-  }
+    percentCompletion: 0,
+  },
 };
 
-const SORTIFY_SESSIONS_KEY = "sortify_sessions";
 const formatSkips = (value) => `${value} ${value === 1 ? "skip" : "skips"}`;
 const landingPage = document.getElementById("landing-page");
 const dashboardPage = document.getElementById("dashboard-page");
@@ -20,41 +21,28 @@ const songsSkippedValue = document.getElementById("songs-skipped-value");
 const songsSkippedLabel = document.getElementById("songs-skipped-label");
 const nowPlayingTitle = document.getElementById("now-playing-title");
 const nowPlayingArtist = document.getElementById("now-playing-artist");
-const nowPlayingCurrentTime = document.getElementById("now-playing-current-time");
+const nowPlayingCurrentTime = document.getElementById(
+  "now-playing-current-time",
+);
 const nowPlayingDuration = document.getElementById("now-playing-duration");
 const nowPlayingCover = document.getElementById("now-playing-cover");
 const nowPlayingProgress = document.getElementById("now-playing-progress");
 const nowPlayingMetaLabel = document.querySelector(".mini-label");
 let isSpotifyConnected = false;
 
-const getStoredSpotifyName = () =>
-  window.localStorage.getItem("spotify_profile_name") ?? "Spotify user";
-
-const getSortifySessions = () => {
-  const rawSessions = window.localStorage.getItem(SORTIFY_SESSIONS_KEY);
-  if (!rawSessions) {
-    return [];
-  }
-
-  try {
-    const parsedSessions = JSON.parse(rawSessions);
-    return Array.isArray(parsedSessions) ? parsedSessions : [];
-  } catch {
-    return [];
-  }
-};
-
 const getListeningSummary = () => {
   const sessions = getSortifySessions();
   return {
     songsPlayed: sessions.length,
-    songsSkipped: sessions.filter((session) => session?.classification === "skipped").length
+    songsSkipped: sessions.filter(
+      (session) => session?.classification === "skipped",
+    ).length,
   };
 };
 
 const getMostSkippedSongs = () => {
   const skippedSessions = getSortifySessions().filter(
-    (session) => session?.classification === "skipped" && session?.trackId
+    (session) => session?.classification === "skipped" && session?.trackId,
   );
 
   if (skippedSessions.length === 0) {
@@ -62,8 +50,8 @@ const getMostSkippedSongs = () => {
       {
         name: "Most skipped songs will appear here",
         genre: "Waiting for Spotify data",
-        score: 0
-      }
+        score: 0,
+      },
     ];
   }
 
@@ -98,19 +86,26 @@ const setPageState = (connected, accountName = "Spotify user") => {
 };
 
 const renderMostSkippedSongs = (songs) => {
-  skippedSongsContainer.innerHTML = "";
+  skippedSongsContainer.replaceChildren();
 
   songs.forEach((artist, index) => {
     const row = document.createElement("div");
     row.className = "artist-row";
-    row.innerHTML = `
-      <div class="artist-rank">${index + 1}</div>
-      <div>
-        <div class="artist-name">${artist.name}</div>
-        <div class="artist-meta">${artist.genre}</div>
-      </div>
-      <div class="artist-score">${formatSkips(artist.score)}</div>
-    `;
+    const rank = document.createElement("div");
+    rank.className = "artist-rank";
+    rank.textContent = String(index + 1);
+    const info = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "artist-name";
+    name.textContent = artist.name;
+    const meta = document.createElement("div");
+    meta.className = "artist-meta";
+    meta.textContent = artist.genre;
+    info.append(name, meta);
+    const score = document.createElement("div");
+    score.className = "artist-score";
+    score.textContent = formatSkips(artist.score);
+    row.append(rank, info, score);
     skippedSongsContainer.appendChild(row);
   });
 };
@@ -118,6 +113,7 @@ const renderMostSkippedSongs = (songs) => {
 const renderDisconnectedState = () => {
   isSpotifyConnected = false;
   setPageState(false);
+  skippedSongsContainer.replaceChildren();
   songsPlayedValue.textContent = "--";
   songsPlayedLabel.textContent = "Connect to load songs played";
   songsSkippedValue.textContent = "--";
@@ -140,7 +136,8 @@ const renderConnectedState = (accountName = "Spotify user") => {
   renderListeningSummary();
   nowPlayingTitle.textContent = connectedPlaceholders.nowPlaying.title;
   nowPlayingArtist.textContent = connectedPlaceholders.nowPlaying.artist;
-  nowPlayingCurrentTime.textContent = connectedPlaceholders.nowPlaying.currentTime;
+  nowPlayingCurrentTime.textContent =
+    connectedPlaceholders.nowPlaying.currentTime;
   nowPlayingDuration.textContent = connectedPlaceholders.nowPlaying.duration;
   nowPlayingProgress.style.width = `${connectedPlaceholders.nowPlaying.percentCompletion}%`;
   nowPlayingCover.style.backgroundImage = `
@@ -164,7 +161,7 @@ window.addEventListener("spotify-auth-changed", (event) => {
   const { connected, profile } = event.detail;
   if (connected) {
     renderConnectedState(
-      profile?.display_name ?? profile?.id ?? getStoredSpotifyName()
+      profile?.display_name ?? profile?.id ?? "Spotify user",
     );
     return;
   }

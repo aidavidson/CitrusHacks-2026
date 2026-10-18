@@ -1,6 +1,8 @@
 .DS_Store
 
 # Local environment files
+.env*
+!.env.example
 .env
 .env.local
 .env.development.local
@@ -25,3 +27,10 @@ build/
 
 .stats2
 .stats3
+
+# Private backend database and token encryption key
+.data/
+token.key
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

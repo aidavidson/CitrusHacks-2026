@@ -1,5 +1,10 @@
 # 🎧 Sortify — Project Codex
 
+> Historical hackathon plan. The app now has a local Express backend, SQLite history,
+> server-side PKCE, and protected cookie sessions. Use `README.md` and
+> `backend/README.md` for current architecture and setup; frontend-only storage
+> guidance below is superseded. The active threshold is 55% with five-second polling.
+
 Sortify is a Spotify listening tracker focused on playlist cleanup, not stream-count estimation. It watches how much of each song a user actually plays, marks low-engagement tracks as skips, and builds a local history of skipped versus completed songs so users can decide what belongs in their playlists.
 
 ---
