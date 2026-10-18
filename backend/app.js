@@ -299,11 +299,11 @@ export function createApp({ config, store, fetchImpl }) {
     res.status(404).json({ error: "Unknown endpoint." }),
   );
   app.get("/", (req, res) =>
-    res.sendFile(path.join(root, "CitrusHacks-2026/index.html")),
+    res.sendFile(path.join(root, "dashboard/index.html")),
   );
   for (const file of ["style.css", "script.js", "playback.js", "book-logo2.png"]) {
     app.get(`/${file}`, (req, res) =>
-      res.sendFile(path.join(root, "CitrusHacks-2026", file)),
+      res.sendFile(path.join(root, "dashboard", file)),
     );
   }
   for (const file of ["auth.js", "listens.js"]) {

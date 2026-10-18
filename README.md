@@ -60,13 +60,13 @@ An installed Google Chrome can be used instead: `PLAYWRIGHT_CHANNEL=chrome npm r
 
 ```text
 backend/                  Express API, OAuth, encrypted sessions, SQLite, tests
-CitrusHacks-2026/         Dashboard HTML/CSS, rendering, playback polling
+dashboard/               Dashboard HTML/CSS, rendering, playback polling
 frontend/js/auth.js       Same-origin backend client; no browser token storage
 frontend/js/listens.js    In-memory dashboard history backed by the API
 .env.example              Local configuration template
 ```
 
-Some files under `frontend/` and `docs/` are earlier hackathon scaffolding. The entry point is `backend/server.js`; the active page is `CitrusHacks-2026/index.html`.
+Some files under `frontend/` and `docs/` are earlier hackathon scaffolding. The entry point is `backend/server.js`; the active page is `dashboard/index.html`.
 
 ## Remaining Limitations
 

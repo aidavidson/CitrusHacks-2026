@@ -16,7 +16,7 @@ Important note: the tracked repo currently uses a 5-second active polling interv
 
 For this test procedure only, use a 20% threshold to validate threshold-crossing behavior in isolation. This is not the product's real classification threshold. The product threshold remains whatever value is currently in the repo. All test results in this document use the 20% threshold unless explicitly labeled otherwise.
 
-In the tracked repo, the threshold constant already exists at [CitrusHacks-2026/index.html](/Users/setup/Documents/CitrusHacks-2026/CitrusHacks-2026/index.html:177) as:
+In the tracked repo, the threshold constant already exists at [dashboard/index.html](dashboard/index.html) as:
 
 ```js
 const SKIP_THRESHOLD = 0.20;
@@ -24,7 +24,7 @@ const SKIP_THRESHOLD = 0.20;
 
 That means no threshold change is needed to run this test procedure right now. If the team later raises the product threshold, temporarily change that constant back to `0.20` for testing and revert it afterward.
 
-If you want the procedure to use a true 8-second active polling interval, the tracked repo currently defines the active interval at [CitrusHacks-2026/index.html](/Users/setup/Documents/CitrusHacks-2026/CitrusHacks-2026/index.html:178):
+If you want the procedure to use a true 8-second active polling interval, the tracked repo currently defines the active interval at [dashboard/index.html](dashboard/index.html):
 
 ```js
 const ACTIVE_POLL_INTERVAL_MS = 5000;
