@@ -373,12 +373,13 @@ h1 {
 }
 
 .dashboard-now-playing {
-  min-height: 540px;
   align-content: start;
 }
 
 .now-playing-cover {
-  aspect-ratio: 1.18;
+  width: min(100%, 240px);
+  aspect-ratio: 1;
+  justify-self: center;
   border-radius: 18px;
   background-position: center;
   background-size: cover;
