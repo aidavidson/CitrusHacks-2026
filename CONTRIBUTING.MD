@@ -2,7 +2,7 @@
 
 These guidelines apply to all contributors, including coding agents.
 
-Sortify tracks Spotify listening behavior to help users identify low-engagement songs and clean up their playlists. The current app uses vanilla HTML, CSS, and JavaScript, a Node.js/Express backend, and SQLite listening history. Read [README.md](README.md) for setup and architecture and [backend/README.md](backend/README.md) for API details. The historical hackathon plan in `AGENTS.md` contains superseded frontend-only guidance.
+Sortify tracks Spotify listening behavior to help users identify low-engagement songs and clean up their playlists. The current app uses React and Vite in `frontend/`, a Node.js/Express backend, and SQLite listening history. Read [README.md](README.md) for setup and architecture and [backend/README.md](backend/README.md) for API details. The historical hackathon plan in `AGENTS.md` contains superseded frontend-only guidance.
 
 ## Branch workflow
 
@@ -11,6 +11,22 @@ Sortify tracks Spotify listening behavior to help users identify low-engagement 
 - Keep branches and pull requests focused on a single change. Avoid unrelated cleanup.
 - Discuss significant architectural changes in an issue before implementing them.
 - Open a pull request to merge into `main`. Use a draft PR for unfinished work.
+
+## Worktree location
+
+- Create every new Git worktree inside the primary repository's `worktrees/` directory, using `worktrees/<descriptive-name>/`.
+- This applies to all contributors and coding agents. Do not create worktrees in external directories, including Codex's default `~/.codex/worktrees/` location. Use Git directly when a tool cannot choose a repository-local destination.
+- Run worktree creation commands from the primary repository root, not from another worktree. Reuse a suitable existing worktree when possible and avoid nesting worktrees inside each other.
+- The root `worktrees/` directory is ignored by Git. Never stage or commit its contents.
+
+For example, from the primary repository root:
+
+```sh
+mkdir -p worktrees
+git worktree add -b codex/dashboard-layout worktrees/dashboard-layout HEAD
+```
+
+Make changes and run checks from the new worktree's directory. Uncommitted changes in the primary checkout are not copied automatically. When finished and the work is safely preserved, remove the checkout with `git worktree remove worktrees/dashboard-layout` from the primary repository root.
 
 ## Conventional Commits
 
@@ -77,7 +93,7 @@ npm run test:browser
 
 If Google Chrome is already installed, use `PLAYWRIGHT_CHANNEL=chrome npm run test:browser` instead. The browser checks use mocked Spotify playback and a temporary database; they do not require a real Spotify login. Check desktop and mobile layouts for visible changes.
 
-The repository currently has no separate formatting, linting, or build scripts. Keep these instructions aligned with `package.json` as tooling evolves. Never run destructive tests against personal, shared, or demo listening history. Database changes should include compatibility or migration instructions and tests using temporary data.
+Run `npm run build` to compile the React dashboard. The test scripts build it automatically; `npm start` requires a build. `npm run dev` provides frontend hot reload on the backend origin; restart it after backend or environment changes. Use `SORTIFY_BROWSER_DEV=1 PLAYWRIGHT_CHANNEL=chrome npm run test:browser` to check development middleware and React Strict Mode as well as the built app. There are no separate formatting or lint scripts. Never run destructive tests against personal, shared, or demo listening history. Database changes should include compatibility or migration instructions and tests using temporary data.
 
 ## Playback tracking and Spotify testing
 
@@ -102,7 +118,7 @@ The repository currently has no separate formatting, linting, or build scripts. 
 - Use placeholders in configuration examples.
 - Keep Spotify access and refresh tokens on the server. Preserve encrypted token storage, HttpOnly cookie sessions, CSRF and Origin checks, OAuth state/PKCE validation, and account isolation.
 - Preserve the exact Spotify read-endpoint allowlist and minimum required scopes. Discuss changes to permissions, playback control, or playlist writes before implementing them.
-- Validate API input on the server, use prepared database statements, and render Spotify-provided text safely with `textContent`.
+- Validate API input on the server, use prepared database statements, and render Spotify-provided text as escaped React text, never raw HTML.
 - Keep the default server bound to loopback. Public deployment requires HTTPS, Secure cookies, deployment-specific origin settings, and a review of the local security assumptions described in the README.
 - If a secret is accidentally committed, notify the maintainers promptly and rotate or revoke it; deleting the file alone is not sufficient.
 - Do not disclose sensitive vulnerability details in public issues or PRs. Coordinate privately with the maintainers.
