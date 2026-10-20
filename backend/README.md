@@ -1,8 +1,10 @@
 # Sortify Backend
 
-Run from the repository root with `npm run dev` or `npm start`. See the root README for Spotify setup and security boundaries.
+Run from the repository root with `npm run dev`, or `npm run build` then `npm start`. See the root README for Spotify setup and security boundaries.
 
-The backend serves the dashboard and its REST API from one loopback origin. It uses Express 5, Helmet, express-rate-limit, Zod, and Node's built-in SQLite driver (Node 24+).
+The backend serves the React dashboard and its REST API from one loopback origin. The React source lives in `frontend/`; older DOM scaffolding is under `frontend/legacy/` and is not served. It uses Express 5, Helmet, express-rate-limit, Zod, and Node's built-in SQLite driver (Node 24+).
+
+In development, `frontend.js` mounts Vite behind the API routes on the same HTTP server, including React Fast Refresh. In the built mode, only `dist/assets` and the compiled root HTML are served. A per-response CSP nonce is substituted into Vite's HTML; API authentication, CSRF/Origin checks, and database storage are unchanged. Vite's filesystem allowlist excludes backend source and private data.
 
 ## Endpoints
 

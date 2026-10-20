@@ -13,6 +13,9 @@ frontend/config.local.js
 # Dependencies
 node_modules/
 
+# Repository-local Git worktrees
+/worktrees/
+
 # Build output
 dist/
 build/

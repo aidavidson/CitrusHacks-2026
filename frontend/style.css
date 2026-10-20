@@ -142,9 +142,9 @@ button {
 .page-shell {
   position: relative;
   z-index: 1;
-  width: min(1180px, calc(100% - 2rem));
+  width: calc(100% - 1.5rem);
   margin: 0 auto;
-  padding: 2rem 0 3rem;
+  padding: 0.75rem 0 1.5rem;
 }
 
 .is-hidden {
@@ -254,27 +254,54 @@ h1 {
   min-height: 1.5rem;
 }
 
+.rate-limit-warning {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  max-width: min(320px, calc(100% - 32px));
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 133, 133, 0.55);
+  border-radius: 8px;
+  background: rgba(61, 10, 18, 0.94);
+  color: #ffe4e6;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.threshold-notice {
+  margin: 6px 0 0;
+  color: #fef08a;
+  font-size: 12px;
+}
+
 .dashboard-page {
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .dashboard-topbar {
-  display: block;
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr) 100px;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .dashboard-branding {
   display: grid;
-  gap: 1rem;
+  min-width: 0;
+  gap: 0.4rem;
   justify-items: center;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .sortify-title {
   margin: 0;
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
   line-height: 0.95;
 }
 
@@ -284,24 +311,18 @@ h1 {
 }
 
 .dashboard-hero-image {
-  width: min(100%, 160px);
+  width: min(100%, 64px);
+  align-self: start;
   display: block;
-  border: 4px solid #d61f3f;
-  border-radius: 24px;
+  border: 2px solid #d61f3f;
+  border-radius: 12px;
   background: rgba(10, 13, 55, 0.4);
 }
 
 .welcome-title {
   margin: 0;
-  font-size: clamp(1.3rem, 3vw, 2rem);
+  font-size: 1rem;
   line-height: 1.1;
-}
-
-.dashboard-button-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
-  justify-content: center;
 }
 
 .primary-button,
@@ -319,6 +340,15 @@ h1 {
   font-weight: 700;
 }
 
+.sign-out-button {
+  justify-self: end;
+  align-self: start;
+  min-height: 44px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 .primary-button:hover,
 .secondary-button:hover {
   transform: translateY(-2px);
@@ -334,7 +364,7 @@ h1 {
 .stat-strip {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 0.75rem;
   margin-top: 1.75rem;
 }
 
@@ -343,8 +373,8 @@ h1 {
 }
 
 .stat-strip article {
-  padding: 1rem;
-  border-radius: 20px;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
   background: linear-gradient(180deg, #0b1ea7 0%, var(--zaffre-shadow) 100%);
   border: 1px solid rgba(255, 75, 92, 0.24);
   box-shadow: 0 18px 32px rgba(0, 20, 168, 0.3);
@@ -352,22 +382,23 @@ h1 {
 
 .stat-number {
   display: block;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.15rem;
   color: var(--button-red);
 }
 
 .stat-strip .stat-label {
   color: var(--button-red);
+  font-size: 0.85rem;
 }
 
 .now-playing-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  padding: 1.2rem;
-  border-radius: 24px;
+  gap: 0.65rem;
+  padding: 0.9rem;
+  border-radius: 16px;
   background: linear-gradient(180deg, rgba(37, 53, 126, 0.95), rgba(82, 25, 69, 0.95));
   border: 1px solid rgba(255, 90, 118, 0.18);
 }
@@ -377,10 +408,10 @@ h1 {
 }
 
 .now-playing-cover {
-  width: min(100%, 240px);
+  width: min(100%, 160px);
   aspect-ratio: 1;
   justify-self: center;
-  border-radius: 18px;
+  border-radius: 12px;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -388,13 +419,13 @@ h1 {
 
 .now-playing-meta h2 {
   margin: 0.15rem 0;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 .now-playing-meta p {
   margin: 0;
   color: #f0d8de;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .progress-block {
@@ -433,26 +464,26 @@ h1 {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.dashboard-grid > * {
+  min-width: 0;
+}
+
+.dashboard-grid > .panel {
+  grid-column: auto;
 }
 
 .panel {
-  padding: 1.25rem;
-  border-radius: 24px;
-}
-
-.panel:nth-child(1) {
-  grid-column: span 5;
-}
-
-.panel:nth-child(2) {
-  grid-column: span 7;
+  padding: 0.9rem;
+  border-radius: 16px;
 }
 
 .wide-panel {
-  grid-column: span 12;
+  grid-column: 1 / -1;
 }
 
 .panel-heading {
@@ -460,18 +491,18 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.65rem;
 }
 
 .panel-heading h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .track-list,
 .artist-list {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .empty-state {
@@ -491,9 +522,9 @@ h1 {
 .artist-row {
   display: grid;
   align-items: center;
-  gap: 0.8rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 18px;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(112, 137, 255, 0.15);
 }
@@ -504,8 +535,8 @@ h1 {
 
 .track-rank,
 .artist-rank {
-  width: 2rem;
-  height: 2rem;
+  width: 1.65rem;
+  height: 1.65rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -517,6 +548,7 @@ h1 {
 .track-title,
 .artist-name {
   font-weight: 700;
+  font-size: 0.9rem;
   overflow-wrap: anywhere;
 }
 
@@ -529,7 +561,7 @@ h1 {
 .track-subtitle,
 .artist-meta {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   margin-top: 0.15rem;
 }
 
@@ -657,26 +689,34 @@ h1 {
 }
 
 @media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .hero-card {
     grid-template-columns: 1fr;
   }
 
-  .panel:nth-child(1),
-  .panel:nth-child(2),
-  .wide-panel {
-    grid-column: span 12;
-  }
 }
 
 @media (max-width: 640px) {
+  .dashboard-topbar {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 0.5rem;
+  }
+
   .page-shell {
-    width: min(100% - 1rem, 1180px);
-    padding-top: 1rem;
+    width: calc(100% - 1rem);
+    padding-top: 0.5rem;
+  }
+
+  .welcome-title {
+    font-size: 0.85rem;
   }
 
   .hero-card,
   .panel {
-    border-radius: 20px;
+    border-radius: 16px;
   }
 
   .hero-card {

@@ -1,5 +1,7 @@
 # 🎧 Sortify — Project Codex
 
+Follow [CONTRIBUTING.MD](CONTRIBUTING.MD) for contribution rules. Before creating a worktree, read its **Worktree location** section: all new worktrees must live in the primary repository's `worktrees/` directory, not an external directory.
+
 > Historical hackathon plan. The app now has a local Express backend, SQLite history,
 > server-side PKCE, and protected cookie sessions. Use `README.md` and
 > `backend/README.md` for current architecture and setup; frontend-only storage

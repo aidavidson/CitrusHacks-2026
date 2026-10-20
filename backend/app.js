@@ -2,12 +2,10 @@ import express from "express";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import { randomBytes, timingSafeEqual, createHash } from "node:crypto";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { createSpotify, HttpError } from "./spotify.js";
+import { builtFrontend } from "./frontend.js";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const random = () => randomBytes(32).toString("base64url");
 const COOKIE = "sortify_session";
 const SESSION_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -31,17 +29,27 @@ const listenSchema = z
   .strict()
   .refine((value) => value.progressMs <= value.durationMs);
 
-export function createApp({ config, store, fetchImpl }) {
+export function createApp({
+  config,
+  store,
+  fetchImpl,
+  frontend,
+  development = false,
+}) {
   const app = express();
   const spotify = createSpotify(config, fetchImpl);
   app.disable("x-powered-by");
+  app.use((req, res, next) => {
+    res.locals.cspNonce = randomBytes(18).toString("base64");
+    next();
+  });
   app.use(
     helmet({
       strictTransportSecurity: false,
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
+          scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.cspNonce}'`],
           scriptSrcAttr: ["'none'"],
           styleSrc: [
             "'self'",
@@ -55,7 +63,7 @@ export function createApp({ config, store, fetchImpl }) {
             "https://i.scdn.co",
             "https://mosaic.scdn.co",
           ],
-          connectSrc: ["'self'"],
+          connectSrc: ["'self'", ...(development ? ["ws://127.0.0.1:*"] : [])],
           objectSrc: ["'none'"],
           frameAncestors: ["'none'"],
           baseUri: ["'none'"],
@@ -298,32 +306,18 @@ export function createApp({ config, store, fetchImpl }) {
   app.use(["/api", "/auth"], (req, res) =>
     res.status(404).json({ error: "Unknown endpoint." }),
   );
-  app.get("/", (req, res) =>
-    res.sendFile(path.join(root, "dashboard/index.html")),
-  );
-  for (const file of ["style.css", "script.js", "playback.js", "book-logo2.png"]) {
-    app.get(`/${file}`, (req, res) =>
-      res.sendFile(path.join(root, "dashboard", file)),
-    );
-  }
-  for (const file of ["auth.js", "listens.js"]) {
-    app.get(`/frontend/js/${file}`, (req, res) =>
-      res.sendFile(path.join(root, "frontend/js", file)),
-    );
-  }
+  app.use(frontend || builtFrontend());
   app.use((req, res) => res.status(404).json({ error: "Not found." }));
   app.use((error, req, res, next) => {
     const status =
       error.status || (error.type === "entity.too.large" ? 413 : 500);
     if (status >= 500) console.error("[Sortify] Request failed:", error.name);
-    res
-      .status(status)
-      .json({
-        error:
-          status >= 500 && status !== 503
-            ? "Server request failed. Please try again."
-            : error.message,
-      });
+    res.status(status).json({
+      error:
+        status >= 500 && status !== 503
+          ? "Server request failed. Please try again."
+          : error.message,
+    });
   });
   return app;
 }
